@@ -40,7 +40,9 @@ var BasicFromBlsName = function(name) {
 			SizeX: szw[0]*1,
 			SizeY: szw[0]*1,
 			SizeZ: szw[0]*3,
-			Name: "Basic"
+			Name: "Basic",
+			Orientation: 0,
+			AddRot: 0
 		}
 	}
 	
@@ -50,11 +52,66 @@ var BasicFromBlsName = function(name) {
 			SizeX: szw[0]*1,
 			SizeY: szw[1]*1,
 			SizeZ: 1,
-			Name: "Basic"
+			Name: "Basic",
+			Orientation: 0,
+			AddRot: 0
 		}
 	}
 	
-	//TODO: match and overall implement wedges/ramps
+	//TODO: rounds
+	//1x1 Round (1x1x1), 1x1 Cone (1x1x1), 2x2 Round (2x2x1), 2x2x2 Cone, 2x2 Disc (2x2x1f), 1x1f Round, 2x2f Round
+	//[size] Arch [Up]: 1x3, 1x4, 1x5(always x2), 1x6x1, 1x6x2, 1x8(always x3)
+	
+	//match ramps:
+	//[-?][angle]° Ramp [1x, 2x, 4x, Corner, 2x Print]"
+	//ysize+zsize depends on angle:
+	//25: y3 z1
+	//45: y2 z1
+	//72: y2 z3
+	//80: y2 z5
+	//ramp ALWAYS has one stud at the top of the ramp, and a ~0.5f lip
+	//corner is always ysize*ysize
+	if(szww[1] == "Ramp") {
+		var angle = szww[0].substring(szww[0].length-3, szww[0].length-1);
+		var rx, ry, rz, rt;
+		if(angle == "25") {
+			ry = 3;
+			rz = 1;
+		} else if(angle == "45") {
+			ry = 2;
+			rz = 1;
+		} else if(angle == "72") {
+			ry = 2;
+			rz = 3;
+		} else if(angle == "80") {
+			ry = 2;
+			rz = 5;
+		} else return;
+		var invert = szww[0].substring(0, 1) == "-";
+		if(szww[2] == "Corner") {
+			rx = ry;
+			rt = "rampcorner";
+		} else {
+			rx = szww[2].slice(0,-1) * 1;
+			rt = "ramp";
+		}
+		return {
+			SizeX: rx,
+			SizeY: ry,
+			SizeZ: rz,
+			Name: rt,
+			Orientation: (invert ? 3 : 0),
+			AddRot: (invert ? 2 : 0)
+		};
+	}
+	
+	//match crests:
+	//[25, 45]° Crest [4x, 2x, 1x, End, Corner]
+	//25degr is 2f tall, 45degr is 3f tall
+	//end is 1x2, corner is 2x2
+	
+	//specials:
+	//"2x2 Corner", "Pine Tree"/"Christmas Tree" 6x6x(7+1f), "8x8 Grill" 8x8x1f, "Castle Wall" 1x3x6, "1x4x5 Window", "2x2x5 Lattice", "1x4x2 Fence", "1x4x2 Bars", "1x4x2 Picket", "Skull" 1x1, "Coffin Standing" ???, "Coffin" ???, "Pumpkin" ???, "Gravestone" ???, "Music Brick" 1x1, "Spawn Point"/"Checkpoint" 3x3x5, "Vehicle Spawn" 8x8f, "Treasure Chest" ???, "Teledoor" ???, "House/Glassiest/Window/Jail/Plain Door" 1x4x6, 
 	
 	//match normal brick sizes and prints:
 	if((szww.length == 1 || szww[1] == "Print") && szww[0].includes("x")) {
@@ -72,7 +129,9 @@ var BasicFromBlsName = function(name) {
 			SizeX: szw[0]*1,
 			SizeY: szw[1]*1,
 			SizeZ: szw[2]*1,
-			Name: "Basic"
+			Name: "Basic",
+			Orientation: 0,
+			AddRot: 0
 		}
 	}
 }
@@ -193,6 +252,7 @@ class InternalBrick {
 	//mtl: material index (0, 1, 2, 3, may change based on Brickadia development)
 	constructor(bbox, pos, rot, clr, mtl, {
 		InternalName = "",
+		Orientation = 0,
 		BrickadiaName = "",
 		BlocklandName = "",
 		BlocklandRotation = 0
@@ -202,6 +262,7 @@ class InternalBrick {
 		this.Position = pos.clone();
 		//this.CenterPosition = bbox.clone().divideScalar(2).add(pos);
 		this.RotationIndex = rot;
+		this.FacingIndex = Orientation;
 		this.Color = clr;
 		this.MaterialIndex = mtl;
 		this.IntRef = InternalName;
