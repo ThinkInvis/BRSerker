@@ -109,7 +109,7 @@ var ForceUpdateGeometry = function() {
 //squishing all these bricks together is slow, so use a slowiterator to avoid locking the UI thread
 var SBG_SI_MeshBaker = new SBG_SlowIterator(function(inst) {
 	var currBrick = inst.bricks[inst.currI];
-	var ngm = GetSimpleBrickGeom(currBrick.BoundingBox);
+	var ngm = GetBrickGeom(currBrick.BoundingBox, currBrick.IntRef);
 	
 	for(var j = 0; j < ngm.faces.length; j++) {
 		ngm.faces[j].color = currBrick.Color;
@@ -131,7 +131,7 @@ var SBG_SI_MeshBaker = new SBG_SlowIterator(function(inst) {
 		inst.currI = 0;
 		inst.maxI = inst.bricks.length;
 		if(inst.maxI == 0) inst.abort = "No bricks to bake";
-		SimpleBrickGeom = [];
+		BrickGeom = [];
 	},
 	OnStagePause: function(inst) {
 		return "Baking mesh... " + Math.floor(inst.currI/inst.maxI*100) + "%";
@@ -172,21 +172,66 @@ var GenGeoRebuild = function() {
 }
 
 var BevelRadius = 0.02;
-var GenerateSimpleBrick = function(i, j, k) {
-	return new THREE.BoxGeometry(i-BevelRadius, j-BevelRadius, k/3-BevelRadius).translate(BevelRadius/2,BevelRadius/2,BevelRadius/2);
+var GenerateSimpleBrick = function(i, j, k, shape) {
+	switch(shape) {
+		case "cyl":
+			//supports non-square sizes even though it really doesn't need to
+			return new THREE.CylinderGeometry(i/2-BevelRadius,i/2-BevelRadius,k/3-BevelRadius,8).rotateX(3.1415/2).scale(1,(j/2-BevelRadius)/(i/2-BevelRadius),1).translate(BevelRadius/2,BevelRadius/2,BevelRadius/2);
+			break;
+		case "ramp":
+			var xm = (BevelRadius-i)/2;
+			var ym = (BevelRadius-j)/2;
+			var zm = (BevelRadius-k/3)/2;
+			var xp = (i-BevelRadius)/2;
+			var yp = (j-BevelRadius)/2;
+			var zp = (k/3-BevelRadius)/2;
+			var geom = new THREE.Geometry();
+			geom.vertices.push(
+				new THREE.Vector3(xm,ym,zm),
+				new THREE.Vector3(xm,yp,zm),
+				new THREE.Vector3(xm,yp,zp),
+				new THREE.Vector3(xp,ym,zm),
+				new THREE.Vector3(xp,yp,zm),
+				new THREE.Vector3(xp,yp,zp)
+			);
+			geom.faces.push(
+				//L side
+				new THREE.Face3(0,2,1),
+				//R side
+				new THREE.Face3(5,3,4),
+				//adjacent
+				new THREE.Face3(0,1,4),
+				new THREE.Face3(0,4,3),
+				//opposite
+				new THREE.Face3(1,2,4),
+				new THREE.Face3(5,4,2),
+				//hypotenuse
+				new THREE.Face3(0,3,5),
+				new THREE.Face3(0,5,2)
+			);
+			geom.computeFaceNormals();
+			return geom;
+			break;
+		case "basic":
+		default:
+			return new THREE.BoxGeometry(i-BevelRadius, j-BevelRadius, k/3-BevelRadius).translate(BevelRadius/2,BevelRadius/2,BevelRadius/2);
+	}
 }
-var SimpleBrickGeom = [];
-var GetSimpleBrickGeom = function(size) {
-	if(typeof SimpleBrickGeom[size.x] === "undefined") {
-		SimpleBrickGeom[size.x] = [];
+var BrickGeom = [];
+var GetBrickGeom = function(size, shape = "basic") {
+	if(typeof BrickGeom[shape] === "undefined") {
+		BrickGeom[shape] = [];
 	}
-	if(typeof SimpleBrickGeom[size.x][size.y] === "undefined") {
-		SimpleBrickGeom[size.x][size.y] = [];
+	if(typeof BrickGeom[shape][size.x] === "undefined") {
+		BrickGeom[shape][size.x] = [];
 	}
-	if(typeof SimpleBrickGeom[size.x][size.y][size.z] === "undefined") {
-		SimpleBrickGeom[size.x][size.y][size.z] = GenerateSimpleBrick(size.x, size.y, size.z);
+	if(typeof BrickGeom[shape][size.x][size.y] === "undefined") {
+		BrickGeom[shape][size.x][size.y] = [];
 	}
-	return SimpleBrickGeom[size.x][size.y][size.z];
+	if(typeof BrickGeom[shape][size.x][size.y][size.z] === "undefined") {
+		BrickGeom[shape][size.x][size.y][size.z] = GenerateSimpleBrick(size.x, size.y, size.z, shape);
+	}
+	return BrickGeom[shape][size.x][size.y][size.z];
 }
 
 
@@ -208,7 +253,7 @@ $("#btn-clear").click(function() {
 	ClearBrickList();
 	if($("#opt-livepreview").get(0).checked)
 		NukeGeometry();
-	SimpleBrickGeom = [];
+	BrickGeom = [];
 	GenEnable();
 });
 $("#btn-shift").click(function() {
