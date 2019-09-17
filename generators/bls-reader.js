@@ -3,7 +3,7 @@ var GenName = "BlsReader";
 Generators[GenName] = new StagedBrickGenerator(GenName, [{apply: function(inst, promise) {
 	var reader = new FileReader();
 	reader.onload = function(e) {
-		var lines = this.result.split("\r\n");
+		var lines = this.result.split("\r\n"); //TODO: is there an easy iterated version of this? can cause a short program freeze when passed huge files (see bl default saves The Bedroom, Golden Gate Bridge)
 		
 		if(lines[0] != "This is a Blockland save file.  You probably shouldn't modify it cause you'll screw it up.") {
 			inst.abort = "Header missing";
