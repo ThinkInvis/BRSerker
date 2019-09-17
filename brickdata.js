@@ -82,7 +82,7 @@ var BasicFromBlsName = function(name) {
 			rz = 3;
 		} else if(angle == "72") {
 			ry = 2;
-			rz = 6;
+			rz = 9;
 		} else if(angle == "80") {
 			ry = 2;
 			rz = 15;
