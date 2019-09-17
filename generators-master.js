@@ -235,6 +235,67 @@ var GenerateSimpleBrick = function(i, j, k, shape) {
 			geom.computeFaceNormals();
 			return geom;
 			break;
+		case "rampcorner":
+			var xm = (BevelRadius-i)/2;
+			var ym = (BevelRadius-j)/2;
+			var zm = (BevelRadius-k/3)/2;
+			var xp = (i-BevelRadius)/2;
+			var yp = (j-BevelRadius)/2;
+			var zp = (k/3-BevelRadius)/2;
+			
+			var xc1 = (1-i)/2;
+			var yc1 = (1-j)/2;
+			//var zc1 = zp
+			//var yc2 = yp
+			var zc2 = (-k/3+RampLipSize)/2;
+			
+			var geom = new THREE.Geometry();
+			geom.vertices.push(
+				new THREE.Vector3(xm,ym,zm), //0: back bottom left
+				new THREE.Vector3(xp,ym,zm), //1: back bottom right
+				new THREE.Vector3(xp,yp,zm), //2: front bottom right
+				new THREE.Vector3(xm,yp,zm), //3: front bottom left
+				
+				new THREE.Vector3(xm,ym,zp), //4: back top left
+				new THREE.Vector3(xc1,ym,zp), //5: back top semiright
+				new THREE.Vector3(xc1,yc1,zp), //6: semifront top semiright
+				new THREE.Vector3(xm,yc1,zp), //7: semifront top left
+				
+				new THREE.Vector3(xp,ym,zc2), //8: back semitop right
+				new THREE.Vector3(xp,yp,zc2), //9: front semitop right
+				new THREE.Vector3(xm,yp,zc2) //A: front semitop left
+			);
+			geom.faces.push(
+				//bottom face: 0123
+				new THREE.Face3(0,2,1),
+				new THREE.Face3(0,3,2),
+				//top face: 4567
+				new THREE.Face3(4,5,6),
+				new THREE.Face3(4,6,7),
+				//topfront face: 7A96
+				new THREE.Face3(7,9,10),
+				new THREE.Face3(7,6,9),
+				//topright face: 5689
+				new THREE.Face3(5,9,6),
+				new THREE.Face3(5,8,9),
+				//front face: 23A9
+				new THREE.Face3(2,3,10),
+				new THREE.Face3(9,2,10),
+				//right face: 1298
+				new THREE.Face3(1,2,8),
+				new THREE.Face3(9,8,2),
+				//back face: 01854
+				new THREE.Face3(0,1,8),
+				new THREE.Face3(0,8,5),
+				new THREE.Face3(0,5,4),
+				//left face: 03A74
+				new THREE.Face3(0,10,3),
+				new THREE.Face3(0,7,10),
+				new THREE.Face3(0,4,7)
+			);
+			geom.computeFaceNormals();
+			return geom;
+			break;
 		case "basic":
 		default:
 			return new THREE.BoxGeometry(i-BevelRadius, j-BevelRadius, k/3-BevelRadius).translate(BevelRadius/2,BevelRadius/2,BevelRadius/2);
