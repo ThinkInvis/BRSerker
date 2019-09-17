@@ -76,16 +76,16 @@ var BasicFromBlsName = function(name) {
 		var rx, ry, rz, rt;
 		if(angle == "25") {
 			ry = 3;
-			rz = 1;
+			rz = 3;
 		} else if(angle == "45") {
 			ry = 2;
-			rz = 1;
+			rz = 3;
 		} else if(angle == "72") {
 			ry = 2;
-			rz = 3;
+			rz = 6;
 		} else if(angle == "80") {
 			ry = 2;
-			rz = 5;
+			rz = 15;
 		} else return;
 		var invert = szww[0].substring(0, 1) == "-";
 		if(szww[2] == "Corner") {
