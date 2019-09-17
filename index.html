@@ -1,0 +1,95 @@
+<meta charset="UTF-8">
+<html>
+	<head>
+		<!--after creating a new generator in /generators/, add a script tag at the bottom of this file. TODO: automatic solution-->
+		<link rel="stylesheet" type="text/css" href="./main.css">
+		<link rel="stylesheet" type="text/css" href="./statusticket.css">
+		
+		<script src="./lib/jquery-3.4.1.min.js"></script>
+		<script src="./lib/three.min.js"></script>
+		<script src="./lib/three-OrbitNoModule.js"></script>
+		<script src="./lib/stats.min.js"></script>
+		<script src="./lib/colour.js"></script>
+		<script src="./lib/decomp.js"></script>
+		<script src="./util.js"></script>
+		<script src="./statusticket.js"></script>
+		<script src="./brickdata.js"></script>
+		<script src="./StagedBrickGenerator.js"></script>
+	</head>
+	<body>
+		<div id="main-container">
+			<div id="panel-controls">
+				<div id="controls-buildinfo" class="controls-subpanel">
+					<div class="controls-subpanel-title">Build Info</div>
+					<span id="label-brickcount" class="opt-full">0 bricks in memory</span>
+					<span id="label-bounds" class="opt-full">Size: N/A</span>
+					<span id="label-cog" class="opt-full">CoG: N/A</span>
+				</div>
+				<div id="controls-buildtools" class="controls-subpanel">
+					<div class="controls-subpanel-title">Build Tools</div>
+					<button id="btn-clear" class="opt-full">Clear</button>
+					<input type="number" id="shiftx" step=1 valNoCache=0 class="opt-quarter opt-input"></input>
+					<input type="number" id="shifty" step=1 valNoCache=0 class="opt-quarter opt-input"></input>
+					<input type="number" id="shiftz" step=1 valNoCache=0 class="opt-quarter opt-input"></input>
+					<button id="btn-shift" class="opt-quarter">Shift</button>
+				</div>
+				<div id="controls-generator" class="controls-subpanel">
+					<div class="controls-subpanel-title">Generation</div>
+					<select id="generator-type" class="opt-threeqtr opt-input">
+						<option value="None">None</option>
+					</select>
+					<button id="btn-generate" class="opt-quarter">Generate</button>
+				</div>
+				<div id="controls-gendynamic" class="controls-subpanel">
+					<div class="controls-subpanel-title">Generator Options</div>
+				</div>
+				<div id="controls-preview" class="controls-subpanel">
+					<div class="controls-subpanel-title">Preview Options</div>
+					<button id="btn-bake" class="opt-full">Rebake Model</button>
+					<span class="opt-half">Autobake</span>
+					<input type="checkbox" id="opt-autobake" class="opt-half opt-input" valNoCache=true></input>
+					<span class="opt-half">Live Preview</span>
+					<input type="checkbox" id="opt-livepreview" class="opt-half opt-input" valNoCache=true></input>
+					<span class="opt-half">Simple Bricks</span>
+					<input type="checkbox" id="opt-simplebricks" class="opt-half opt-input" valNoCache=false></input>
+					<span class="opt-half">Show Grid at Cursor</span>
+					<input type="checkbox" id="opt-previewgrid" class="opt-half opt-input" valNoCache=false></input>
+					<span class="opt-half">Light Pitch</span>
+					<input type="range" id="opt-lightpitch" min=-1.5706 max=1.5706 step=0.001 class="opt-half opt-input" valNoCache=0.528></input>
+					<span class="opt-half">Light Azimuth</span>
+					<input type="range" id="opt-lightyaw" min=0 max=6.2830 step=0.001 class="opt-half opt-input" valNoCache=0.785></input>
+					<span class="opt-half">Light Intensity (2^n)</span>
+					<input type="number" id="opt-lightintensity" min=-4 max=4 step=0.1 value=0 class="opt-half opt-input" valNoCache=0.5></input>
+				</div>
+				<div class="controls-footer">
+					<span style="font-weight:600">BRSerker</span>: it erks BRS files<br>
+					(Brickadia/Blockland procedural build generator)<br>
+					<a>[TODO: GH repo link]</a>
+				</div>
+			</div>
+			<div id="panel-preview">
+				<div id="status-container"></div>
+			</div>
+		</div>
+		<script src="./previewer.js"></script>
+		<script>
+			//definitively stop browsers from caching non-default input values on page refresh by manually setting them back to the defaults at the end of page load
+			//screw your cache >:(
+			var chEvt = new Event('change');
+			var allNoCache = $('input[valNoCache]');
+			allNoCache.filter('[type="checkbox"]').each(function(ind, elem) {
+				$(this).prop("checked", ($(this).attr("valNoCache") == "true") ? "checked" : "");
+				this.dispatchEvent(chEvt);
+			});
+			allNoCache.filter('[type="range"], [type="number"]').each(function(ind, elem) {
+				$(this).val($(this).attr("valNoCache"));
+				this.dispatchEvent(chEvt);
+			});
+		</script>
+		<script src="./generators-master.js"></script>
+		<script src="./generators/cobblewall.js"></script>
+		<script src="./generators/bls-reader.js"></script>
+		<script src="./generators/bls-writer.js"></script>
+		<script src="./generators/simple-image-reader.js"></script>
+	</body>
+</html>

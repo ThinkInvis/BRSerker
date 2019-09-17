@@ -1,0 +1,47 @@
+.warntri {
+	width: 0;
+	height: 0;
+	background-color: transparent;
+	display: inline-block;
+	border-radius: 0;
+	border-left: 5px solid transparent;
+	border-right: 5px solid transparent;
+	border-top: 0px solid transparent;
+	border-bottom: 10px solid #ffff00;
+	margin: 3px;
+	transform: scale(1.25);
+}
+.spinner-sm {
+	display: inline-block;
+	background-color: transparent;
+	border: 5px solid rgba(0, 0, 0, 0.1);
+	border-top: 5px solid #000;
+	border-radius: 50%;
+	margin: 1px;
+	width: 5px;
+	height: 5px;
+	animation: spin 2s linear infinite;
+}
+@keyframes spin {
+	0% {transform: rotate(0deg);}
+	100% {transform: rotate(360deg);}
+}
+.statusticket {
+	height: 20px;
+	padding: 2px;
+	transition: width 0.2s, opacity 0.2s;
+	opacity: 1;
+	width: 0;
+	background-color: #888800;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	border: solid 2px #000000;
+	border-radius: 4px;
+}
+.statustext {
+	background: transparent;
+	margin-left: 4px;
+	line-height: 20px;
+	vertical-align: 4px;
+}
