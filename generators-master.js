@@ -8,7 +8,7 @@ var Generators = {};
 var GeneratorNames = [];
 var currGen = false;
 
-var MASTER_BRICK_LIMIT = 20000; //30k may be good but probably shouldn't risk it
+var MASTER_BRICK_LIMIT = 100000;
 
 //max brickadia brick size before it crashes = 2048 units (in any direction?), 1x1f = 10x10x4 units
 //TODO: for now these are softcaps in the BLS writer (bricks are resized) instead of hardcaps in the engine (stops generation), StagedBrickGenerator external halting in general needs some work
@@ -173,9 +173,9 @@ var GenGeoRebuild = function() {
 
 var BevelRadius = 0.02;
 var GenerateSimpleBrick = function(i, j, k) {
-	if($("#opt-simplebricks").get(0).checked) {
-		return new THREE.BoxGeometry(i, j, k/3);
-	} else {
+	//if($("#opt-simplebricks").get(0).checked) {
+	return new THREE.BoxGeometry(i-BevelRadius, j-BevelRadius, k/3-BevelRadius).translate(BevelRadius/2,BevelRadius/2,BevelRadius/2);
+	/*} else {
 		var shape = new THREE.Shape();
 		shape.moveTo(0,BevelRadius);
 		shape.lineTo(BevelRadius,0);
@@ -194,8 +194,8 @@ var GenerateSimpleBrick = function(i, j, k) {
 			bevelThickness: BevelRadius,
 			bevelSegments: 1
 		});
-		return RGeom.translate(0,0,BevelRadius).translate(-i/2,-j/2,-k/6);
-	}
+		return RGeom.translate(-i/2,-j/2,BevelRadius-k/6);
+	}*/
 }
 var SimpleBrickGeom = [];
 var GetSimpleBrickGeom = function(size) {
