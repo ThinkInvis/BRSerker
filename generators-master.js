@@ -173,29 +173,7 @@ var GenGeoRebuild = function() {
 
 var BevelRadius = 0.02;
 var GenerateSimpleBrick = function(i, j, k) {
-	//if($("#opt-simplebricks").get(0).checked) {
 	return new THREE.BoxGeometry(i-BevelRadius, j-BevelRadius, k/3-BevelRadius).translate(BevelRadius/2,BevelRadius/2,BevelRadius/2);
-	/*} else {
-		var shape = new THREE.Shape();
-		shape.moveTo(0,BevelRadius);
-		shape.lineTo(BevelRadius,0);
-		shape.lineTo(i-BevelRadius,0);
-		shape.lineTo(i,BevelRadius);
-		shape.lineTo(i,j-BevelRadius);
-		shape.lineTo(i-BevelRadius,j);
-		shape.lineTo(BevelRadius,j);
-		shape.lineTo(0,j-BevelRadius);
-		shape.lineTo(0,BevelRadius);
-		var RGeom = new THREE.ExtrudeGeometry(shape, {
-			steps: 1,
-			depth: k / 3 - BevelRadius * 2,
-			bevelSize: BevelRadius,
-			bevelOffset: -BevelRadius,
-			bevelThickness: BevelRadius,
-			bevelSegments: 1
-		});
-		return RGeom.translate(-i/2,-j/2,BevelRadius-k/6);
-	}*/
 }
 var SimpleBrickGeom = [];
 var GetSimpleBrickGeom = function(size) {
