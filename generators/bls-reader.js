@@ -62,8 +62,9 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [{apply: function(inst, 
 				new THREE.Color(inst.colorset[words[6]*1][0],inst.colorset[words[6]*1][1],inst.colorset[words[6]*1][2]),
 				0, { //TODO: material index
 					InternalName: bmatch.Name,
+					Orientation: bmatch.Orientation,
 					BlocklandName: bwords[0],
-					BlocklandRotation: 0,
+					BlocklandRotation: bmatch.AddRot,
 					BlocklandCFX: words[8]*1, //NYI
 					BlocklandSFX: words[9]*1, //NYI
 					BlocklandRay: words[10]*1, //NYI
