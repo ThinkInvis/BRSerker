@@ -172,6 +172,7 @@ var GenGeoRebuild = function() {
 }
 
 var BevelRadius = 0.02;
+var RampLipSize = 0.2;
 var GenerateSimpleBrick = function(i, j, k, shape) {
 	switch(shape) {
 		case "cyl":
@@ -185,29 +186,51 @@ var GenerateSimpleBrick = function(i, j, k, shape) {
 			var xp = (i-BevelRadius)/2;
 			var yp = (j-BevelRadius)/2;
 			var zp = (k/3-BevelRadius)/2;
+			
+			var yc1 = (1-j)/2;
+			//var zc1 = zp
+			//var yc2 = yp
+			var zc2 = (-k/3+RampLipSize)/2;
+			
 			var geom = new THREE.Geometry();
 			geom.vertices.push(
-				new THREE.Vector3(xm,ym,zm),
-				new THREE.Vector3(xm,yp,zm),
-				new THREE.Vector3(xm,yp,zp),
-				new THREE.Vector3(xp,ym,zm),
-				new THREE.Vector3(xp,yp,zm),
-				new THREE.Vector3(xp,yp,zp)
+				new THREE.Vector3(xm,ym,zm), //0: back bottom left
+				new THREE.Vector3(xp,ym,zm), //1: back bottom right
+				new THREE.Vector3(xp,yp,zm), //2: front bottom right
+				new THREE.Vector3(xm,yp,zm), //3: front bottom left
+				
+				new THREE.Vector3(xm,ym,zp), //4: back top left
+				new THREE.Vector3(xp,ym,zp), //5: back top right
+				new THREE.Vector3(xp,yc1,zp), //6: semifront top right
+				new THREE.Vector3(xm,yc1,zp), //7: semifront top left
+				
+				new THREE.Vector3(xm,yp,zc2), //8: front semitop left
+				new THREE.Vector3(xp,yp,zc2) //9: front semitop right
 			);
 			geom.faces.push(
-				//L side
+				//bottom face: 0123
 				new THREE.Face3(0,2,1),
-				//R side
-				new THREE.Face3(5,3,4),
-				//adjacent
-				new THREE.Face3(0,1,4),
-				new THREE.Face3(0,4,3),
-				//opposite
-				new THREE.Face3(1,2,4),
-				new THREE.Face3(5,4,2),
-				//hypotenuse
-				new THREE.Face3(0,3,5),
-				new THREE.Face3(0,5,2)
+				new THREE.Face3(0,3,2),
+				//back face: 0145
+				new THREE.Face3(0,1,5),
+				new THREE.Face3(0,5,4),
+				//top face: 4567
+				new THREE.Face3(4,5,6),
+				new THREE.Face3(4,6,7),
+				//front face: 2389
+				new THREE.Face3(2,3,8),
+				new THREE.Face3(2,8,9),
+				//hypotenuse face: 6789
+				new THREE.Face3(6,8,7),
+				new THREE.Face3(6,9,8),
+				//left face: 03874
+				new THREE.Face3(0,8,3),
+				new THREE.Face3(0,4,8),
+				new THREE.Face3(4,7,8),
+				//right face: 12965
+				new THREE.Face3(1,2,9),
+				new THREE.Face3(1,9,5),
+				new THREE.Face3(5,9,6)
 			);
 			geom.computeFaceNormals();
 			return geom;
