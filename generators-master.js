@@ -197,6 +197,10 @@ var BevelRadius = 0.02;
 var RampLipSize = 0.2;
 var GenerateSimpleBrick = function(i, j, k, shape) {
 	switch(shape) {
+		case "cone":
+			//supports non-square sizes even though it really doesn't need to
+			return new THREE.CylinderGeometry(i/4-BevelRadius,i/2-BevelRadius,k/3-BevelRadius,8).rotateX(3.1415/2).scale(1,(j/2-BevelRadius)/(i/2-BevelRadius),1).translate(BevelRadius/2,BevelRadius/2,BevelRadius/2);
+			break;
 		case "cyl":
 			//supports non-square sizes even though it really doesn't need to
 			return new THREE.CylinderGeometry(i/2-BevelRadius,i/2-BevelRadius,k/3-BevelRadius,8).rotateX(3.1415/2).scale(1,(j/2-BevelRadius)/(i/2-BevelRadius),1).translate(BevelRadius/2,BevelRadius/2,BevelRadius/2);
