@@ -118,7 +118,6 @@ var SBG_SI_MeshBaker = new SBG_SlowIterator(function(inst) {
 	var tmtx = new THREE.Matrix4();
 	tmtx.multiply(new THREE.Matrix4().makeTranslation(currBrick.Position.x, currBrick.Position.y, currBrick.Position.z/3));
 	tmtx.multiply(new THREE.Matrix4().makeTranslation(currBrick.BoundingBox.x/2, currBrick.BoundingBox.y/2, currBrick.BoundingBox.z/6));
-	var rotOffset = 0;
 	switch(currBrick.FacingIndex) {
 		//TODO: order on this is almost definitely not consistent with brickadia's
 		case 1:
@@ -128,22 +127,20 @@ var SBG_SI_MeshBaker = new SBG_SlowIterator(function(inst) {
 			tmtx.multiply(new THREE.Matrix4().makeRotationX(3.14159265/2));
 			break;
 		case 3:
-			rotOffset = 2;
 			tmtx.multiply(new THREE.Matrix4().makeRotationY(3.14159265));
+			tmtx.multiply(new THREE.Matrix4().makeRotationZ(3.14159265));
 			break;
 		case 4:
-			rotOffset = 2;
 			tmtx.multiply(new THREE.Matrix4().makeRotationY(-3.14159265/2));
 			break;
 		case 5:
-			rotOffset = 2;
 			tmtx.multiply(new THREE.Matrix4().makeRotationX(-3.14159265/2));
 			break;
 		case 0:
 		default:
 			break;
 	}
-	tmtx.multiply(new THREE.Matrix4().makeRotationZ((currBrick.RotationIndex+rotOffset)*3.14159265/2));
+	tmtx.multiply(new THREE.Matrix4().makeRotationZ(currBrick.RotationIndex*3.14159265/2));
 	GenGeometry.merge(ngm, tmtx);
 	
 	inst.currI ++;
@@ -212,7 +209,7 @@ var GenerateSimpleBrick = function(i, j, k, shape) {
 			var yp = (j-BevelRadius)/2;
 			var zp = (k/3-BevelRadius)/2;
 			
-			var yc1 = (1-j)/2;
+			var yc1 = 1-j/2;
 			//var zc1 = zp
 			//var yc2 = yp
 			var zc2 = (-k/3+RampLipSize)/2;
@@ -277,8 +274,8 @@ var GenerateSimpleBrick = function(i, j, k, shape) {
 			var yp = (j-BevelRadius)/2;
 			var zp = (k/3-BevelRadius)/2;
 			
-			var xc1 = (1-i)/2;
-			var yc1 = (1-j)/2;
+			var xc1 = 1-i/2;
+			var yc1 = 1-j/2;
 			//var zc1 = zp
 			//var yc2 = yp
 			var zc2 = (-k/3+RampLipSize)/2;
