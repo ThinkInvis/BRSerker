@@ -154,12 +154,12 @@ var GenGeoRebuild = function() {
 		GenGeometry.computeBoundingBox();
 		var nsz = new THREE.Vector3();
 		GenGeometry.boundingBox.getSize(nsz);
-		var nzwhole = nsz.z.toFixed(0);
-		var nzflat = ((nsz.z - nzwhole)*3).toFixed(0);
-		if(nzflat == "-0" || nzflat == "0") {
-			$("#label-bounds").text("Size: " + nsz.x.toFixed(0) + "x" + nsz.y.toFixed(0) + "x" + nzwhole);
+		var nzwhole = Math.floor(nsz.z);
+		var nzflat = Math.floor((nsz.z - nzwhole)*3);
+		if(nzflat == 0) {
+			$("#label-bounds").text("Size: " + nsz.x.toFixed(0) + "x" + nsz.y.toFixed(0) + "x" + nzwhole.toFixed(0));
 		} else {
-			$("#label-bounds").text("Size: " + nsz.x.toFixed(0) + "x" + nsz.y.toFixed(0) + "x(" + nzwhole + "+" + nzflat + "f)");
+			$("#label-bounds").text("Size: " + nsz.x.toFixed(0) + "x" + nsz.y.toFixed(0) + "x(" + nzwhole.toFixed(0) + "+" + nzflat.toFixed(0) + "f)");
 		}
 		GenGeometry.boundingBox.getCenter(nsz);
 		$("#label-cog").text("CoG: " + nsz.x.toFixed(1) + ", " + nsz.y.toFixed(1) + ", " + nsz.z.toFixed(1));
