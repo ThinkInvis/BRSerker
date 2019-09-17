@@ -118,7 +118,32 @@ var SBG_SI_MeshBaker = new SBG_SlowIterator(function(inst) {
 	var tmtx = new THREE.Matrix4();
 	tmtx.multiply(new THREE.Matrix4().makeTranslation(currBrick.Position.x, currBrick.Position.y, currBrick.Position.z/3));
 	tmtx.multiply(new THREE.Matrix4().makeTranslation(currBrick.BoundingBox.x/2, currBrick.BoundingBox.y/2, currBrick.BoundingBox.z/6));
-	tmtx.multiply(new THREE.Matrix4().makeRotationZ(currBrick.RotationIndex*3.14159265/2));
+	var rotOffset = 0;
+	switch(currBrick.FacingIndex) {
+		//TODO: order on this is almost definitely not consistent with brickadia's
+		case 1:
+			tmtx.multiply(new THREE.Matrix4().makeRotationY(3.14159265/2));
+			break;
+		case 2:
+			tmtx.multiply(new THREE.Matrix4().makeRotationX(3.14159265/2));
+			break;
+		case 3:
+			rotOffset = 2;
+			tmtx.multiply(new THREE.Matrix4().makeRotationY(3.14159265));
+			break;
+		case 4:
+			rotOffset = 2;
+			tmtx.multiply(new THREE.Matrix4().makeRotationY(-3.14159265/2));
+			break;
+		case 5:
+			rotOffset = 2;
+			tmtx.multiply(new THREE.Matrix4().makeRotationX(-3.14159265/2));
+			break;
+		case 0:
+		default:
+			break;
+	}
+	tmtx.multiply(new THREE.Matrix4().makeRotationZ((currBrick.RotationIndex+rotOffset)*3.14159265/2));
 	GenGeometry.merge(ngm, tmtx);
 	
 	inst.currI ++;
@@ -232,8 +257,17 @@ var GenerateSimpleBrick = function(i, j, k, shape) {
 				new THREE.Face3(1,9,5),
 				new THREE.Face3(5,9,6)
 			);
+			//we don't need UVs but if we don't have any during a geometry merge threejs will spam the dev console so much it freezes
+			geom.faceVertexUvs[0] = [];
+			for(var i = 0; i < geom.faces.length; i++) {
+				geom.faceVertexUvs[0].push([
+					new THREE.Vector2(0, 0),
+					new THREE.Vector2(0, 0),
+					new THREE.Vector2(0, 0)
+				]);
+			}
 			geom.computeFaceNormals();
-			return geom;
+			return geom.rotateZ(3.14159265);
 			break;
 		case "rampcorner":
 			var xm = (BevelRadius-i)/2;
@@ -293,8 +327,16 @@ var GenerateSimpleBrick = function(i, j, k, shape) {
 				new THREE.Face3(0,7,10),
 				new THREE.Face3(0,4,7)
 			);
+			geom.faceVertexUvs[0] = [];
+			for(var i = 0; i < geom.faces.length; i++) {
+				geom.faceVertexUvs[0].push([
+					new THREE.Vector2(0, 0),
+					new THREE.Vector2(0, 0),
+					new THREE.Vector2(0, 0)
+				]);
+			}
 			geom.computeFaceNormals();
-			return geom;
+			return geom.rotateZ(3.14159265);
 			break;
 		case "basic":
 		default:
