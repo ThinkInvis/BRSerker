@@ -33,7 +33,8 @@ var ToBlsBasicName = function(x,y,z) {
 var BasicFromBlsName = function(name) {
 	var szww = name.split(" ");
 	var szw = szww[0].split("x");
-	
+		
+		
 	//match cubes:
 	if(szww[1] == "Cube") { //excludes zone cubes
 		return {
@@ -58,9 +59,7 @@ var BasicFromBlsName = function(name) {
 		}
 	}
 	
-	//TODO: rounds
-	//1x1 Round (1x1x1), 1x1 Cone (1x1x1), 2x2 Round (2x2x1), 2x2x2 Cone, 2x2 Disc (2x2x1f), 1x1f Round, 2x2f Round
-	//[size] Arch [Up]: 1x3, 1x4, 1x5(always x2), 1x6x1, 1x6x2, 1x8(always x3)
+	//TODO: [size] Arch [Up]: 1x3, 1x4, 1x5(always x2), 1x6x1, 1x6x2, 1x8(always x3)
 	
 	//match ramps:
 	//[-?][angle]° Ramp [1x, 2x, 4x, Corner, 2x Print]"
@@ -90,10 +89,10 @@ var BasicFromBlsName = function(name) {
 		var invert = szww[0].substring(0, 1) == "-";
 		if(szww[2] == "Corner") {
 			rx = ry;
-			rt = "rampcorner";
+			rt = "RampCorner";
 		} else {
 			rx = szww[2].slice(0,-1) * 1;
-			rt = "ramp";
+			rt = "Ramp";
 		}
 		return {
 			SizeX: rx,
@@ -101,7 +100,7 @@ var BasicFromBlsName = function(name) {
 			SizeZ: rz,
 			Name: rt,
 			Orientation: (invert ? 3 : 0),
-			AddRot: (invert ? 2 : 0)
+			AddRot: 0
 		};
 	}
 	
@@ -113,8 +112,8 @@ var BasicFromBlsName = function(name) {
 	//specials:
 	//"2x2 Corner", "Pine Tree"/"Christmas Tree" 6x6x(7+1f), "8x8 Grill" 8x8x1f, "Castle Wall" 1x3x6, "1x4x5 Window", "2x2x5 Lattice", "1x4x2 Fence", "1x4x2 Bars", "1x4x2 Picket", "Skull" 1x1, "Coffin Standing" ???, "Coffin" ???, "Pumpkin" ???, "Gravestone" ???, "Music Brick" 1x1, "Spawn Point"/"Checkpoint" 3x3x5, "Vehicle Spawn" 8x8f, "Treasure Chest" ???, "Teledoor" ???, "House/Glassiest/Window/Jail/Plain Door" 1x4x6, 
 	
-	//match normal brick sizes and prints:
-	if((szww.length == 1 || szww[1] == "Print") && szww[0].includes("x")) {
+	//match normal brick sizes, prints, non-arch rounds:
+	if((szww.length == 1 || szww[1] == "Print" || szww[1] == "Disc" || szww[1] == "Round" || szww[1] == "Cone") && szww[0].includes("x")) {
 		if(szw.length > 2) {
 			if(szww[0].slice(-1) == "F")
 				szw[2] = szw[2].slice(0, -1);
@@ -125,11 +124,27 @@ var BasicFromBlsName = function(name) {
 			szw[2] = 1;
 		} else
 			szw[2] = 3;
+		
+		//1x2f prints are weird
+		if(name == "1x2F Print") {
+			var s3 = szw[1];
+			szw[1] = szw[0];
+			szw[0] = s3;
+		}
+		
+		var bn = "Basic";
+		if(szww[1] == "Disc") {
+			bn = "Cone"; //TODO: this is actually 3x3 instead of 2x2, but the offset from bls files works out here. might not always work out, so we should find a way to add a custom XYZ scale instead
+			szw[2] /= 3;
+		}
+		if(szww[1] == "Round" || szww[1] == "Cone")
+			bn = szww[1];
+		
 		return {
 			SizeX: szw[0]*1,
 			SizeY: szw[1]*1,
 			SizeZ: szw[2]*1,
-			Name: "Basic",
+			Name: bn,
 			Orientation: 0,
 			AddRot: 0
 		}

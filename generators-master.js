@@ -197,15 +197,15 @@ var BevelRadius = 0.02;
 var RampLipSize = 0.2;
 var GenerateSimpleBrick = function(i, j, k, shape) {
 	switch(shape) {
-		case "cone":
+		case "Cone":
 			//supports non-square sizes even though it really doesn't need to
 			return new THREE.CylinderGeometry(i/4-BevelRadius,i/2-BevelRadius,k/3-BevelRadius,8).rotateX(3.1415/2).scale(1,(j/2-BevelRadius)/(i/2-BevelRadius),1).translate(BevelRadius/2,BevelRadius/2,BevelRadius/2);
 			break;
-		case "cyl":
+		case "Round":
 			//supports non-square sizes even though it really doesn't need to
 			return new THREE.CylinderGeometry(i/2-BevelRadius,i/2-BevelRadius,k/3-BevelRadius,8).rotateX(3.1415/2).scale(1,(j/2-BevelRadius)/(i/2-BevelRadius),1).translate(BevelRadius/2,BevelRadius/2,BevelRadius/2);
 			break;
-		case "ramp":
+		case "Ramp":
 			var xm = (BevelRadius-i)/2;
 			var ym = (BevelRadius-j)/2;
 			var zm = (BevelRadius-k/3)/2;
@@ -270,7 +270,7 @@ var GenerateSimpleBrick = function(i, j, k, shape) {
 			geom.computeFaceNormals();
 			return geom.rotateZ(3.14159265);
 			break;
-		case "rampcorner":
+		case "RampCorner":
 			var xm = (BevelRadius-i)/2;
 			var ym = (BevelRadius-j)/2;
 			var zm = (BevelRadius-k/3)/2;
@@ -337,15 +337,15 @@ var GenerateSimpleBrick = function(i, j, k, shape) {
 				]);
 			}
 			geom.computeFaceNormals();
-			return geom.rotateZ(3.14159265);
+			return geom.rotateZ(3.14159265*3/2);
 			break;
-		case "basic":
+		case "Basic":
 		default:
 			return new THREE.BoxGeometry(i-BevelRadius, j-BevelRadius, k/3-BevelRadius).translate(BevelRadius/2,BevelRadius/2,BevelRadius/2);
 	}
 }
 var BrickGeom = [];
-var GetBrickGeom = function(size, shape = "basic") {
+var GetBrickGeom = function(size, shape = "Basic") {
 	if(typeof BrickGeom[shape] === "undefined") {
 		BrickGeom[shape] = [];
 	}
