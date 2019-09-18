@@ -2,15 +2,37 @@ var GenName = "BlsWriter";
 
 Generators[GenName] = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(function(inst) {
 	var tb = inst.bricks[inst.currI];
+	
+	//TODO: export generated ramps, etc. only supports basic for now, except preloaded bricks.
 	var tbn = ToBlsBasicName(tb.BoundingBox.x, tb.BoundingBox.y, tb.BoundingBox.z);
-	var nl = tbn.Name + '" '; //name
-	nl += (tb.Position.x+tb.BoundingBox.x/2)/2 + " " + (tb.Position.y+tb.BoundingBox.y/2)/2 + " " + (tb.Position.z+tb.BoundingBox.z/2)/5 + " "; //position
-	nl += (tb.RotationIndex + tbn.Rotation) * 1 + " "; //rotation index
-	nl += "0 "; //is baseplate
-	nl += ColorQuantize([tb.Color.r, tb.Color.g, tb.Color.b, 1.0], brsColorsetRGB).SetI + " "; //colorset index
-	nl += "  "; //print ID
-	nl += "0 0 1 1 1"; //colorfx, shapefx, ray, col, ren
-	inst.lines.push(nl);
+	if(tb.BlsRef != "") { //brick was loaded from a BLS, restore original (or internally modified) data
+		var nl = tb.BlsRef + '" ';
+		nl += (tb.Position.x+tb.BoundingBox.x/2)/2 + " " + (tb.Position.y+tb.BoundingBox.y/2)/2 + " " + (tb.Position.z+tb.BoundingBox.z/2)/5 + " ";
+		nl += (tb.RotationIndex - tb.BlsData.ExtraRotation) + " ";
+		nl += tb.BlsData.IsBaseplate + " ";
+		nl += ColorQuantize([tb.Color.r, tb.Color.g, tb.Color.b, 1.0], brsColorsetRGB).SetI + " ";
+		nl += tb.BlsData.PrintName + " ";
+		nl += tb.BlsData.ColorFX + " ";
+		nl += tb.BlsData.ShapeFX + " ";
+		nl += tb.BlsData.Raycasting + " ";
+		nl += tb.Collision ? "1 " : "0 ";
+		nl += tb.Rendering ? "1 " : "0 ";
+		inst.lines.push(nl);
+		for(var i = 0; i < tb.BlsData.ExtraLines.length; i++) {
+			inst.lines.push(tb.BlsData.ExtraLines[i]);
+		}
+	} else { //brick was internally generated, setup placeholder properties
+		var nl = tbn.Name + '" '; //name
+		nl += (tb.Position.x+tb.BoundingBox.x/2)/2 + " " + (tb.Position.y+tb.BoundingBox.y/2)/2 + " " + (tb.Position.z+tb.BoundingBox.z/2)/5 + " "; //position
+		nl += (tb.RotationIndex + tbn.Rotation) * 1 + " "; //rotation index
+		nl += "0 "; //is baseplate
+		nl += ColorQuantize([tb.Color.r, tb.Color.g, tb.Color.b, 1.0], brsColorsetRGB).SetI + " "; //colorset 	index
+		nl += "  "; //print ID
+		nl += "0 0 1"; //colorfx, shapefx, ray
+		nl += tb.Collision ? "1 " : "0 "; //col
+		nl += tb.Rendering ? "1 " : "0 "; //ren
+		inst.lines.push(nl);
+	}
 	
 	inst.currI++;
 	return inst.currI == inst.maxI;
@@ -52,7 +74,8 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(fu
 	},
 	OnFinalize: function(inst) {
 		inst.lines.push("");
-		download("generated.bls", inst.lines.join("\r\n"));
+		var bytes = new TextEncoder("windows-1252", {NONSTANDARD_allowLegacyEncoding: true}).encode(inst.lines.join("\r\n"));
+		BlobDownload("generated.bls", [bytes], "text/plain");
 	}
 });
 var o = new Option(GenName, GenName);

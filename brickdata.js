@@ -270,7 +270,10 @@ class InternalBrick {
 		Orientation = 4,
 		BrickadiaName = "",
 		BlocklandName = "",
-		BlocklandRotation = 0
+		BrickadiaData = {},
+		BlocklandData = {},
+		Visible = true,
+		Collides = true
 	} = {}) {
 		//TODO: more advanced construction, e.g. wedges; loading from meshes
 		this.BoundingBox = bbox.clone();
@@ -283,6 +286,9 @@ class InternalBrick {
 		this.IntRef = InternalName;
 		this.BrsRef = BrickadiaName;
 		this.BlsRef = BlocklandName;
-		this.BlsRotOffset = BlocklandRotation;
+		this.BrsData = BrickadiaData;
+		this.BlsData = BlocklandData;
+		this.Rendering = Visible;
+		this.Collision = Collides;
 	}
 }

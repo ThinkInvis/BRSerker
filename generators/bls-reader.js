@@ -45,34 +45,49 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [{apply: function(inst, 
 		inst.lines = lines;
 		promise.resolve(inst);
 	}
-	reader.readAsText(inst.fileName);
+	reader.readAsText(inst.fileName, 'windows-1252');
 }}, new SBG_SlowIterator(function(inst) {
 	var line = inst.lines[inst.currLine];
-	if(line.substring(0, 2) == "+-") {
-		
+	
+	if(line == "") {
+		return true;
+	} else if(line.substring(0, 2) == "+-") {
+		var lastBrick = inst.brickBuffer[inst.brickBuffer.length-1];
+		lastBrick.BlsData.ExtraLines.push(line);
 	} else {
 		var bwords = line.split('"');
 		var bmatch = BasicFromBlsName(bwords[0]);
-		if(typeof bmatch !== "undefined") {
-			var words = bwords[1].split(' ');
-			inst.brickBuffer.push(new InternalBrick(
-				new THREE.Vector3(bmatch.SizeX, bmatch.SizeY, bmatch.SizeZ),
-				new THREE.Vector3(words[1]*2-bmatch.SizeX/2, words[2]*2-bmatch.SizeY/2, words[3]*5-bmatch.SizeZ/2),
-				words[4],
-				new THREE.Color(inst.colorset[words[6]*1][0],inst.colorset[words[6]*1][1],inst.colorset[words[6]*1][2]),
-				0, { //TODO: material index
-					InternalName: bmatch.Name,
-					Orientation: bmatch.Orientation,
-					BlocklandName: bwords[0],
-					BlocklandRotation: bmatch.AddRot,
-					BlocklandCFX: words[8]*1, //NYI
-					BlocklandSFX: words[9]*1, //NYI
-					BlocklandRay: words[10]*1, //NYI
-					BlocklandCol: words[11]*1, //NYI
-					BlocklandRen: words[12]*1, //NYI
-					BrickadiaName: ""
-			}));
+		if(typeof bmatch === "undefined") {
+			bmatch = {
+				Name: "Basic",
+				SizeX: 0,
+				SizeY: 0,
+				SizeZ: 0,
+				AddRot: 0
+			}
 		}
+		var words = bwords[1].split(' ');
+		inst.brickBuffer.push(new InternalBrick(
+			new THREE.Vector3(bmatch.SizeX, bmatch.SizeY, bmatch.SizeZ),
+			new THREE.Vector3(words[1]*2-bmatch.SizeX/2, words[2]*2-bmatch.SizeY/2, words[3]*5-bmatch.SizeZ/2),
+			words[4],
+			new THREE.Color(inst.colorset[words[6]*1][0],inst.colorset[words[6]*1][1],inst.colorset[words[6]*1][2]),
+			0, { //TODO: material index
+				InternalName: bmatch.Name,
+				Orientation: bmatch.Orientation,
+				BlocklandName: bwords[0],
+				BlocklandData: {
+					ExtraLines: [],
+					ExtraRotation: bmatch.AddRot,
+					ColorFX: words[8],
+					ShapeFX: words[9],
+					Raycasting: words[10],
+					PrintName: words[7],
+					IsBaseplate: words[5]
+				},
+				Collides: words[11]*1 == 1,
+				Visible: words[12]*1 == 1
+		}));
 	}
 	
 	inst.currLine++;

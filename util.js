@@ -46,6 +46,21 @@ function download(filename, text) {
 
   document.body.removeChild(element);
 }
+function BlobDownload(Filename, Bytes, Mimetype) {
+	var filData = new Blob(Bytes, { type: Mimetype });
+	if (window.navigator && window.navigator.msSaveOrOpenBlob) { // for IE
+		window.navigator.msSaveOrOpenBlob(filData, Filename);
+	} else { // for Non-IE (chrome, firefox etc.)
+		var a = document.createElement("a");
+		document.body.appendChild(a);
+		a.style = "display: none";
+		var filUrl = URL.createObjectURL(filData);
+		a.href = filUrl;
+		a.download = Filename;
+		a.click();
+		a.remove();
+	}
+};
 
 //find the closest color in a colorset using the dE2000 algorithm
 var ColorQuantize = function(color, colorset) {
