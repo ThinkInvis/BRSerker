@@ -42,7 +42,7 @@ var BasicFromBlsName = function(name) {
 			SizeY: szw[0]*1,
 			SizeZ: szw[0]*3,
 			Name: "Basic",
-			Orientation: 0,
+			Orientation: 4,
 			AddRot: 0
 		}
 	}
@@ -54,7 +54,7 @@ var BasicFromBlsName = function(name) {
 			SizeY: szw[1]*1,
 			SizeZ: 1,
 			Name: "Basic",
-			Orientation: 0,
+			Orientation: 4,
 			AddRot: 0
 		}
 	}
@@ -99,7 +99,7 @@ var BasicFromBlsName = function(name) {
 			SizeY: ry,
 			SizeZ: rz,
 			Name: rt,
-			Orientation: (invert ? 3 : 0),
+			Orientation: (invert ? 5 : 4),
 			AddRot: 0
 		};
 	}
@@ -145,7 +145,7 @@ var BasicFromBlsName = function(name) {
 			SizeY: szw[1]*1,
 			SizeZ: szw[2]*1,
 			Name: bn,
-			Orientation: 0,
+			Orientation: 4,
 			AddRot: 0
 		}
 	}
@@ -267,7 +267,7 @@ class InternalBrick {
 	//mtl: material index (0, 1, 2, 3, may change based on Brickadia development)
 	constructor(bbox, pos, rot, clr, mtl, {
 		InternalName = "",
-		Orientation = 0,
+		Orientation = 4,
 		BrickadiaName = "",
 		BlocklandName = "",
 		BlocklandRotation = 0
