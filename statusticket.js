@@ -14,7 +14,7 @@ class StatusTicket {
 		 fadeInTime = 500,
 		 fadeOutTime = 500,
 		} = {}) { //defaults in an options object, courtesy of premium ES6 fuckery
-		this.BgHandle = $("<div>", {"class": "statusticket", "style": "opacity:0;width:0;background-color:"+bgColor+";color:"+fgColor});
+		this.BgHandle = $("<div>", {"class": "statusticket", "style": "opacity:0;width:0;background-color:"+bgColor+";color:"+fgColor,"title":initText});
 		this.TextHandle = $("<span>", {"class": "statustext"});
 		this.IconHandle = $("<div>", {"class": iconClass, "style": "margin-top: 3px;"});
 		this.BgHandle.append(this.IconHandle);
@@ -41,6 +41,7 @@ class StatusTicket {
 	set Text(t) {
 		this._Text = t;
 		this.TextHandle.text(t);
+		this.BgHandle.prop('title', t);
 	}
 	close() {
 		if(this.FadeOutTime == 0)
