@@ -11,6 +11,11 @@
 		<script src="./lib/stats.min.js"></script>
 		<script src="./lib/colour.js"></script>
 		<script src="./lib/brs.js"></script>
+		<script>
+		window.TextEncoder = window.TextDecoder = null;
+		</script>
+		<script src="./lib/encoding-indexes.js"></script>
+		<script src="./lib/encoding.js"></script>
 		<script src="./util.js"></script>
 		<script src="./statusticket.js"></script>
 		<script src="./brickdata.js"></script>
@@ -86,6 +91,7 @@
 		</script>
 		<script src="./generators-master.js"></script>
 		<script src="./generators/cobblewall.js"></script>
+		<script src="./generators/brs-reader.js"></script>
 		<script src="./generators/bls-reader.js"></script>
 		<script src="./generators/bls-writer.js"></script>
 		<script src="./generators/simple-image-reader.js"></script>
