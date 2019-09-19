@@ -17,39 +17,36 @@ class SBG_SlowIterator {
 	apply(inst, promise) {
 		this.genSetupVars(inst, promise);
 		this._genSetupDone(inst, promise);
-		
-		if(typeof inst.abort !== "undefined") {
-			if(inst._statusEnabled)
-				new StatusTicket(inst._statusContainer, {
-					initText: "Stage " + inst._stageIndex + " setup failed! Internal: " + inst.abort,
-					bgColor: "ff0000",
-					iconClass: "warntri",
-					timeout: 15000
-				});
-			promise.resolve();
-		}
 	}
 	_genSetupDone(inst, promise) {
+		var masterEstopMsg;
+		if(typeof inst._stageIndex === "undefined") masterEstopMsg = "Emergency stop! ";
+		else masterEstopMsg = "Stage " + inst._stageIndex + " e-stop! ";
+		
 		if(typeof inst.abort !== "undefined") {
 			promise.resolve();
 			if(inst._statusEnabled)
 				new StatusTicket(inst._statusContainer, {
-					initText: "Stage " + inst._stageIndex + " setup failed! Internal: " + inst.abort,
+					initText: masterEstopMsg + "Internal: " + inst.abort,
 					bgColor: "ff0000",
 					iconClass: "warntri",
 					timeout: 15000
 				});
 			return;
 		}
+		
 		inst._stageStepper = setInterval((function(self){
 			return function() {
 				var tAccum = 0;
 				while(tAccum < self.maxExecTime) {
 					var t0 = window.performance.now();
+					var masterEstopMsg;
+					if(typeof inst._stageIndex === "undefined") masterEstopMsg = "Emergency stop! ";
+					else masterEstopMsg = "Stage " + inst._stageIndex + " e-stop! ";
 					if(inst._brickCountCap > -1 && inst.brickBuffer.length > inst._brickCountCap) {
 						if(inst._statusEnabled)
 							new StatusTicket(inst._statusContainer, {
-								initText: "Stage " + inst._stageIndex + " e-stop! Too many bricks.",
+								initText: masterEstopMsg + "Too many bricks.",
 								bgColor: "ff0000",
 								iconClass: "warntri",
 								timeout: 15000
@@ -59,7 +56,7 @@ class SBG_SlowIterator {
 					} else if(inst._extCancel) {
 						if(inst._statusEnabled)
 							new StatusTicket(inst._statusContainer, {
-								initText: "Stage " + inst._stageIndex + " e-stop! Cancelled by external source.",
+								initText: masterEstopMsg + "Cancelled by external source.",
 								bgColor: "ff0000",
 								iconClass: "warntri",
 								timeout: 15000
@@ -69,7 +66,7 @@ class SBG_SlowIterator {
 					} else if(typeof inst.abort !== "undefined") {
 						if(inst._statusEnabled)
 							new StatusTicket(inst._statusContainer, {
-								initText: "Stage " + inst._stageIndex + " e-stop! Internal: " + inst.abort,
+								initText: masterEstopMsg + "e-stop! Internal: " + inst.abort,
 								bgColor: "ff0000",
 								iconClass: "warntri",
 								timeout: 15000
