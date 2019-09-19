@@ -10,6 +10,21 @@ body {
 	margin: 0;
 }
 
+/*prevents sup/sub from modifying line height*/
+sup, sub {
+	vertical-align: baseline;
+	position: relative;
+	top: -0.4em;
+}
+sub {
+	top: 0.4em;
+}
+
+.hint, .hint * {
+	color: #ccc;
+	font-size: 10px;
+}
+
 input[type="range"] {
 	-webkit-appearance: none;
 	background-color: #aaa;
