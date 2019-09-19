@@ -202,7 +202,7 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 		PxScaleLabel: $("<span>", {"class":"opt-half","html":"Brick Scale:<span class='hint'> linear</span>"}),
 		PxScale: $("<input>", {"type":"number", "class":"opt-half opt-input", "min":1, "max":50, "value":1, "step":1}),
 		ModeLabel: $("<span>", {"class":"opt-half","text":"Build Horizontal:"}),
-		Mode: $("<input>", {"type":"checkbox", "class":"opt-half opt-input"}),
+		Mode: $("<span>", {"class":"opt-half cb-container opt-input", "html":"&nbsp;"}).append($("<input>", {"type":"checkbox"})),
 		QuantizeLabel: $("<span>", {"class":"opt-half","text":"Color Quantize:"}), //TODO: add this as a standalone generator that operates on existing bricks, can replace the hardcoded quantize in cobblewall among oithers
 		Quantize: $("<select class='opt-half opt-input'><option value='none'>None</option><option value='brs' selected>BR Default</option><option value='bls'>BL Default</option><option value='post'>Posterize</option></select>"),
 		PosterizeLabelX: $("<span>", {"class":"opt-half","text":"- Posterize level:","style":"display:none"}),
@@ -224,7 +224,7 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 		
 		inst.imgScale = Math.pow(2, this.controls.Scale.val()*1);
 		inst.pixelScale = this.controls.PxScale.val()*1;
-		inst.horizontal = this.controls.Mode.get(0).checked;
+		inst.horizontal = this.controls.Mode.find("input").get(0).checked;
 		inst.optMode = this.controls.OptMode.val();
 		inst.fileName = this.controls.Reader.get(0).files[0];
 		inst.alphaCutoff = this.controls.AlphaCutoff.val()*1;

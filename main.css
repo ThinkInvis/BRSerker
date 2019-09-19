@@ -32,6 +32,7 @@ input[type="range"] {
 	height: 5px;
 	border: inset 2px #aaa;
 	opacity: 0.5;
+	margin-top: 5px;
 }
 
 input[type="range"]::-webkit-slider-thumb {
@@ -139,4 +140,19 @@ button {
 }
 a {
 	color: #aaf;
+}
+.cb-container {
+	box-sizing: border-box;
+	padding-left: 1em;
+	padding-right: 4px;
+	padding-top: 1px; /*hack for text align*/
+	display: flex;
+	justify-content: space-between;
+}
+.cb-container input[type="checkbox"] {
+	margin-top: -2px;
+	flex-grow: 0;
+	outline: none;
+	height: 20px;
+	width: 0;
 }

@@ -52,12 +52,9 @@
 				<div id="controls-preview" class="controls-subpanel">
 					<div class="controls-subpanel-title">Preview Options</div>
 					<button id="btn-bake" class="opt-full gen-lock">Rebake Model</button>
-					<span class="opt-half">Autobake</span>
-					<input type="checkbox" id="opt-autobake" class="opt-half opt-input" valNoCache=true></input>
-					<span class="opt-half">Live Preview</span>
-					<input type="checkbox" id="opt-livepreview" class="opt-half opt-input" valNoCache=true></input>
-					<span class="opt-half">Show Grid at Cursor</span>
-					<input type="checkbox" id="opt-previewgrid" class="opt-half opt-input" valNoCache=false></input>
+					<span class="cb-container opt-input opt-half">Autobake<input type="checkbox" id="opt-autobake" valNoCache=true></input></span>
+					<span class="cb-container opt-input opt-half">Live Preview<input type="checkbox" id="opt-livepreview" valNoCache=true></input></span>
+					<span class="cb-container opt-input opt-half" style="display:none">Grid at Cursor<input type="checkbox" id="opt-previewgrid" valNoCache=false></input></span> <!--TODO: option nonfunctional (raycasting was broken by InstancedBufferGeometry, need to set up GPU raycasting)-->
 					<span class="opt-half">Light Pitch</span>
 					<input type="range" id="opt-lightpitch" min=-1.5706 max=1.5706 step=0.001 class="opt-half opt-input" valNoCache=0.528></input>
 					<span class="opt-half">Light Azimuth</span>
