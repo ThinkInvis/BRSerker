@@ -98,7 +98,7 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [{apply: function(inst, 
 	RunSpeed: 50,
 	MaxExecTime: 40
 })], {
-	Controls: {Reader: $("<input>", {"type":"file", "class":"opt-full", "accept":".bls"})},
+	Controls: {Reader: $("<input>", {"type":"file", "class":"opt-1-1", "accept":".bls"})},
 	OnSetup: function(inst) {
 		if(this.controls.Reader.get(0).files.length < 1) {
 			inst.abort = "No file loaded";

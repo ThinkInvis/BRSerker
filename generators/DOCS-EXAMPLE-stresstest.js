@@ -69,22 +69,22 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(fu
 	StatusText: "StressTesting...", //Initial text that will appear in the status popup, and stay there if you don't change it with SBG_SlowIterator's onStagePause (or manually). Defaults to the generator's name.
 	Description: "Generates lots of bricks real damn fast... to help with testing stress. Also serves as documentation/help for the StagedBrickGenerator class!", //Unused in this app (for now). Defaults to "I generate bricks."
 	Controls: { //A list of JQuery element handles that, in this app, will be appended to the Generator Options UI area when this generator is selected in the menu. When another generator is selected, these will be detached before new options are added. Defaults to nothing.
-		BrickCountLabel: $("<span class='opt-half'>Brick count (10^n):</span>"),
-		BrickCount: $("<input>", {"type": "number", "min": 0, "max": 6, "value": 4, "step": 0.1, "class": "opt-half opt-input"}),
-		ScatterLabel: $("<span class='opt-half'>Scatter radius (10^n):</span>"),
-		Scatter: $("<input>", {"type": "number", "min": 1, "max": 6, "value": 2, "step": 0.1, "class": "opt-half opt-input"}),
-		BrickLabel: $("<span class='opt-half'>Brick size (min, max):</span>"),
-		MinBrick: $("<input>", {"type": "number", "step": 1, "class": "opt-quarter opt-input"}),
-		MaxBrick: $("<input>", {"type": "number", "step": 1, "class": "opt-quarter opt-input"}),
-		ColorHLabel: $("<span class='opt-half'>Hue (basis, var):</span>"),
-		BaseColorH: $("<input>", {"type": "number", "min": 0, "max": 1, "value": 0.5, "step": 0.01, "class": "opt-quarter opt-input"}),
-		VarColorH: $("<input>", {"type": "number", "min": 0, "max": 1, "value": 0.5, "step": 0.01, "class": "opt-quarter opt-input"}),
-		ColorSLabel: $("<span class='opt-half'>Sat (basis, var):</span>"),
-		BaseColorS: $("<input>", {"type": "number", "min": 0, "max": 1, "value": 0.5, "step": 0.01, "class": "opt-quarter opt-input"}),
-		VarColorS: $("<input>", {"type": "number", "min": 0, "max": 1, "value": 0.5, "step": 0.01, "class": "opt-quarter opt-input"}),
-		ColorVLabel: $("<span class='opt-half'>Val (basis, var):</span>"),
-		BaseColorV: $("<input>", {"type": "number", "min": 0, "max": 1, "value": 0.5, "step": 0.01, "class": "opt-quarter opt-input"}),
-		VarColorV: $("<input>", {"type": "number", "min": 0, "max": 1, "value": 0.5, "step": 0.01, "class": "opt-quarter opt-input"})
+		BrickCountLabel: $("<span class='opt-2-4'>Brick count (10^n):</span>"),
+		BrickCount: $("<input>", {"type": "number", "min": 0, "max": 6, "value": 4, "step": 0.1, "class": "opt-2-4 opt-input"}),
+		ScatterLabel: $("<span class='opt-2-4'>Scatter radius (10^n):</span>"),
+		Scatter: $("<input>", {"type": "number", "min": 1, "max": 6, "value": 2, "step": 0.1, "class": "opt-2-4 opt-input"}),
+		BrickLabel: $("<span class='opt-2-4'>Brick size (min, max):</span>"),
+		MinBrick: $("<input>", {"type": "number", "step": 1, "class": "opt-1-4 opt-input"}),
+		MaxBrick: $("<input>", {"type": "number", "step": 1, "class": "opt-1-4 opt-input"}),
+		ColorHLabel: $("<span class='opt-2-4'>Hue (basis, var):</span>"),
+		BaseColorH: $("<input>", {"type": "number", "min": 0, "max": 1, "value": 0.5, "step": 0.01, "class": "opt-1-4 opt-input"}),
+		VarColorH: $("<input>", {"type": "number", "min": 0, "max": 1, "value": 0.5, "step": 0.01, "class": "opt-1-4 opt-input"}),
+		ColorSLabel: $("<span class='opt-2-4'>Sat (basis, var):</span>"),
+		BaseColorS: $("<input>", {"type": "number", "min": 0, "max": 1, "value": 0.5, "step": 0.01, "class": "opt-1-4 opt-input"}),
+		VarColorS: $("<input>", {"type": "number", "min": 0, "max": 1, "value": 0.5, "step": 0.01, "class": "opt-1-4 opt-input"}),
+		ColorVLabel: $("<span class='opt-2-4'>Val (basis, var):</span>"),
+		BaseColorV: $("<input>", {"type": "number", "min": 0, "max": 1, "value": 0.5, "step": 0.01, "class": "opt-1-4 opt-input"}),
+		VarColorV: $("<input>", {"type": "number", "min": 0, "max": 1, "value": 0.5, "step": 0.01, "class": "opt-1-4 opt-input"})
 	},
 	OnSetup: function(inst) {
 		//This function is called before the first call to the first stage's generator function. Defaults to an empty function.

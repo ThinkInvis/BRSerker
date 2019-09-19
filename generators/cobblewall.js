@@ -40,21 +40,21 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(fu
 	})
 ], {
 	Controls: {
-		WidthLabel: $("<span class='opt-half'>Width/Height:</span>"),
-		Width: $("<input>", {"type": "number", "min": 1, "max": 64, "value": 8, "step": 1, "class": "opt-quarter opt-input"}),
-		Height: $("<input>", {"type": "number", "min": 1, "max": 64, "value": 18, "step": 1, "class": "opt-quarter opt-input"}),
-		BrickLabel: $("<span class='opt-half'>Brick size (min, max):</span>"),
-		MinBrick: $("<input>", {"type": "number", "step": 1, "class": "opt-quarter opt-input"}),
-		MaxBrick: $("<input>", {"type": "number", "step": 1, "class": "opt-quarter opt-input"}),
-		ColorHLabel: $("<span class='opt-half'>Hue (basis, var):</span>"),
-		BaseColorH: $("<input>", {"type": "number", "min": 0, "max": 1, "value": 0, "step": 0.01, "class": "opt-quarter opt-input"}),
-		VarColorH: $("<input>", {"type": "number", "min": 0, "max": 1, "value": 0, "step": 0.01, "class": "opt-quarter opt-input"}),
-		ColorSLabel: $("<span class='opt-half'>Sat (basis, var):</span>"),
-		BaseColorS: $("<input>", {"type": "number", "min": 0, "max": 1, "value": 0, "step": 0.01, "class": "opt-quarter opt-input"}),
-		VarColorS: $("<input>", {"type": "number", "min": 0, "max": 1, "value": 0, "step": 0.01, "class": "opt-quarter opt-input"}),
-		ColorVLabel: $("<span class='opt-half'>Val (basis, var):</span>"),
-		BaseColorV: $("<input>", {"type": "number", "min": 0, "max": 1, "value": 0.4, "step": 0.01, "class": "opt-quarter opt-input"}),
-		VarColorV: $("<input>", {"type": "number", "min": 0, "max": 1, "value": 0.2, "step": 0.01, "class": "opt-quarter opt-input"})
+		WidthLabel: $("<span class='opt-2-4'>Width/Height:</span>"),
+		Width: $("<input>", {"type": "number", "min": 1, "max": 64, "value": 8, "step": 1, "class": "opt-1-4 opt-input"}),
+		Height: $("<input>", {"type": "number", "min": 1, "max": 64, "value": 18, "step": 1, "class": "opt-1-4 opt-input"}),
+		BrickLabel: $("<span class='opt-2-4'>Brick size (min, max):</span>"),
+		MinBrick: $("<input>", {"type": "number", "step": 1, "class": "opt-1-4 opt-input"}),
+		MaxBrick: $("<input>", {"type": "number", "step": 1, "class": "opt-1-4 opt-input"}),
+		ColorHLabel: $("<span class='opt-2-4'>Hue (basis, var):</span>"),
+		BaseColorH: $("<input>", {"type": "number", "min": 0, "max": 1, "value": 0, "step": 0.01, "class": "opt-1-4 opt-input"}),
+		VarColorH: $("<input>", {"type": "number", "min": 0, "max": 1, "value": 0, "step": 0.01, "class": "opt-1-4 opt-input"}),
+		ColorSLabel: $("<span class='opt-2-4'>Sat (basis, var):</span>"),
+		BaseColorS: $("<input>", {"type": "number", "min": 0, "max": 1, "value": 0, "step": 0.01, "class": "opt-1-4 opt-input"}),
+		VarColorS: $("<input>", {"type": "number", "min": 0, "max": 1, "value": 0, "step": 0.01, "class": "opt-1-4 opt-input"}),
+		ColorVLabel: $("<span class='opt-2-4'>Val (basis, var):</span>"),
+		BaseColorV: $("<input>", {"type": "number", "min": 0, "max": 1, "value": 0.4, "step": 0.01, "class": "opt-1-4 opt-input"}),
+		VarColorV: $("<input>", {"type": "number", "min": 0, "max": 1, "value": 0.2, "step": 0.01, "class": "opt-1-4 opt-input"})
 	},
 	OnSetup: function(inst) {
 		inst.X = 0;

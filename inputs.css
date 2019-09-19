@@ -1,0 +1,94 @@
+.hint, .hint * {
+	color: #ccc;
+	font-size: 10px;
+}
+
+input[type="range"] {
+	-webkit-appearance: none;
+	background-color: #aaa;
+	height: 5px;
+	border: inset 2px #aaa;
+	opacity: 0.5;
+	margin-top: 5px;
+	width: 100%;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	background-color: #ccc;
+	opacity: 0.8;
+	width: 5px;
+	height: 10px;
+}
+
+input[type="checkbox"] {
+	margin: 0;
+	padding: 0;
+}
+.opt-1-8 {
+	width: 12.5%;
+	flex-grow: 0.5;
+	height: 20px;
+}
+.opt-1-4, .opt-2-8 {
+	width: 25%;
+	flex-grow: 1;
+	height: 20px;
+}
+.opt-3-8 {
+	width: 37.5%;
+	flex-grow: 1.5;
+	height: 20px;
+}
+.opt-1-2, .opt-2-4, .opt-4-8 {
+	width: 50%;
+	flex-grow: 2;
+	height: 20px;
+}
+.opt-5-8 {
+	width: 67.5%;
+	flex-grow: 2.5;
+	height: 20px;
+}
+.opt-3-4, .opt-6-8 {
+	width: 75%;
+	flex-grow: 3;
+	height: 20px;
+}
+.opt-7-8 {
+	width: 87.5%;
+	flex-grow: 3.5;
+	height: 20px;
+}
+.opt-8-8, .opt-4-4, .opt-2-2, .opt-1-1 {
+	width: 100%;
+	flex-grow: 4;
+	height: 20px;
+}
+.opt-input {
+	background-color: #333;
+	color: #fff;
+	outline: none;
+	border-radius: 2px;
+	border: 2px outset #999;
+	height: 20px;
+}
+button {
+	border: 2px outset #999;
+	padding: 0;
+}
+.cb-container {
+	box-sizing: border-box;
+	padding-left: 1em;
+	padding-right: 4px;
+	padding-top: 1px; /*hack for text align*/
+	display: flex;
+	justify-content: space-between;
+}
+.cb-container input[type="checkbox"] {
+	margin-top: -2px;
+	flex-grow: 0;
+	outline: none;
+	height: 20px;
+	width: 0;
+}

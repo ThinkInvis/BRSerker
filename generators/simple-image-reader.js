@@ -196,25 +196,25 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 	})
 ], {
 	Controls: {
-		Reader: $("<input>", {"type":"file", "class":"opt-full", "accept":"image/*", "height":"20"}),
-		ScaleLabel: $("<span>", {"class":"opt-half","html":"Image Scale:<span class='hint'> 2<sup>n</sup>, may be &lt;0</span>"}),
-		Scale: $("<input>", {"type":"number", "class":"opt-half opt-input", "min":-4, "max":4, "value":0, "step":0.1}),
-		PxScaleLabel: $("<span>", {"class":"opt-half","html":"Brick Scale:<span class='hint'> linear</span>"}),
-		PxScale: $("<input>", {"type":"number", "class":"opt-half opt-input", "min":1, "max":50, "value":1, "step":1}),
-		ModeLabel: $("<span>", {"class":"opt-half","text":"Build Horizontal:"}),
-		Mode: $("<span>", {"class":"opt-half cb-container opt-input", "html":"&nbsp;"}).append($("<input>", {"type":"checkbox"})),
-		QuantizeLabel: $("<span>", {"class":"opt-half","text":"Color Quantize:"}), //TODO: add this as a standalone generator that operates on existing bricks, can replace the hardcoded quantize in cobblewall among oithers
-		Quantize: $("<select class='opt-half opt-input'><option value='none'>None</option><option value='brs' selected>BR Default</option><option value='bls'>BL Default</option><option value='post'>Posterize</option></select>"),
-		PosterizeLabelX: $("<span>", {"class":"opt-half","text":"- Posterize level:","style":"display:none"}),
-		PosterizeR: $("<input>", {"type":"number", "class":"opt-quarter opt-input", "min":1, "max":16, "value":4, "step":1, "style":"display:none"}),
-		PosterizeG: $("<input>", {"type":"number", "class":"opt-quarter opt-input", "min":1, "max":16, "value":4, "step":1, "style":"display:none"}),
-		PosterizeLabelY: $("<span>", {"class":"opt-half hint","html":"&nbsp;&nbsp;&nbsp;RG/BA stages","style":"display:none"}),
-		PosterizeB: $("<input>", {"type":"number", "class":"opt-quarter opt-input", "min":1, "max":16, "value":4, "step":1, "style":"display:none"}),
-		PosterizeA: $("<input>", {"type":"number", "class":"opt-quarter opt-input", "min":1, "max":16, "value":4, "step":1, "style":"display:none"}),
-		OptModeLabel: $("<span>", {"class":"opt-half","text":"Optimize:"}),
-		OptMode: $("<select class='opt-half opt-input'><option value='none'>None</option><option value='x' selected>X</option><option value='y'>Y</option></select>"),
-		AlphaCutoffLabel: $("<span>", {"class":"opt-half","text":"Alpha cutoff:"}),
-		AlphaCutoff: $("<input>", {"type":"number", "class":"opt-half opt-input", "min":0, "max":0.99, "value":0, "step":0.01})
+		Reader: $("<input>", {"type":"file", "class":"opt-1-1", "accept":"image/*", "height":"20"}),
+		ScaleLabel: $("<span>", {"class":"opt-1-2","html":"Image Scale:<span class='hint'> 2<sup>n</sup>, may be &lt;0</span>"}),
+		Scale: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":-4, "max":4, "value":0, "step":0.1}),
+		PxScaleLabel: $("<span>", {"class":"opt-1-2","html":"Brick Scale:<span class='hint'> linear</span>"}),
+		PxScale: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":1, "max":50, "value":1, "step":1}),
+		ModeLabel: $("<span>", {"class":"opt-1-2","text":"Build Horizontal:"}),
+		Mode: $("<span>", {"class":"opt-1-2 cb-container opt-input", "html":"&nbsp;"}).append($("<input>", {"type":"checkbox"})),
+		QuantizeLabel: $("<span>", {"class":"opt-1-2","text":"Color Quantize:"}), //TODO: add this as a standalone generator that operates on existing bricks, can replace the hardcoded quantize in cobblewall among oithers
+		Quantize: $("<select class='opt-1-2 opt-input'><option value='none'>None</option><option value='brs' selected>BR Default</option><option value='bls'>BL Default</option><option value='post'>Posterize</option></select>"),
+		PosterizeLabelX: $("<span>", {"class":"opt-2-4","text":"- Posterize level:","style":"display:none"}),
+		PosterizeR: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "min":1, "max":16, "value":4, "step":1, "style":"display:none"}),
+		PosterizeG: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "min":1, "max":16, "value":4, "step":1, "style":"display:none"}),
+		PosterizeLabelY: $("<span>", {"class":"opt-2-4 hint","html":"&nbsp;&nbsp;&nbsp;RG/BA stages","style":"display:none"}),
+		PosterizeB: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "min":1, "max":16, "value":4, "step":1, "style":"display:none"}),
+		PosterizeA: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "min":1, "max":16, "value":4, "step":1, "style":"display:none"}),
+		OptModeLabel: $("<span>", {"class":"opt-1-2","text":"Optimize:"}),
+		OptMode: $("<select class='opt-1-2 opt-input'><option value='none'>None</option><option value='x' selected>X</option><option value='y'>Y</option></select>"),
+		AlphaCutoffLabel: $("<span>", {"class":"opt-1-2","text":"Alpha cutoff:"}),
+		AlphaCutoff: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":0.99, "value":0, "step":0.01})
 	},
 	OnSetup: function(inst) {
 		if(this.controls.Reader.get(0).files.length < 1) {

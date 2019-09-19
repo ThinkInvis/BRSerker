@@ -20,34 +20,6 @@ sub {
 	top: 0.4em;
 }
 
-.hint, .hint * {
-	color: #ccc;
-	font-size: 10px;
-}
-
-input[type="range"] {
-	-webkit-appearance: none;
-	background-color: #aaa;
-	width: 100px;
-	height: 5px;
-	border: inset 2px #aaa;
-	opacity: 0.5;
-	margin-top: 5px;
-}
-
-input[type="range"]::-webkit-slider-thumb {
-	-webkit-appearance: none;
-	background-color: #ccc;
-	opacity: 0.8;
-	width: 5px;
-	height: 10px;
-}
-
-input[type="checkbox"] {
-	margin: 0;
-	padding: 0;
-}
-
 .controls-subpanel {
 	display: flex;
 	border-radius: 2px;
@@ -61,44 +33,6 @@ input[type="checkbox"] {
 	width: 100%;
 	flex-grow: 4;
 	font-weight: bold;
-}
-
-.opt-quarter {
-	width: 25%;
-	flex-grow: 1;
-	height: 20px;
-}
-.opt-tqh {
-	width: 37.5%;
-	flex-grow: 1.5;
-	height: 20px;
-}
-.opt-half {
-	width: 50%;
-	flex-grow: 2;
-	height: 20px;
-}
-.opt-threeqtr {
-	width: 75%;
-	flex-grow: 3;
-	height: 20px;
-}
-.opt-full {
-	width: 100%;
-	flex-grow: 4;
-	height: 20px;
-}
-.opt-input {
-	background-color: #333;
-	color: #fff;
-	outline: none;
-	border-radius: 2px;
-	border: 2px outset #999;
-	height: 20px;
-}
-button {
-	border: 2px outset #999;
-	padding: 0;
 }
 
 #main-container {
@@ -140,19 +74,4 @@ button {
 }
 a {
 	color: #aaf;
-}
-.cb-container {
-	box-sizing: border-box;
-	padding-left: 1em;
-	padding-right: 4px;
-	padding-top: 1px; /*hack for text align*/
-	display: flex;
-	justify-content: space-between;
-}
-.cb-container input[type="checkbox"] {
-	margin-top: -2px;
-	flex-grow: 0;
-	outline: none;
-	height: 20px;
-	width: 0;
 }
