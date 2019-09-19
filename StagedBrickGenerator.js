@@ -128,8 +128,8 @@ class StagedBrickGenerator {
 	generate({
 		BrickCountCap = -1,
 		StatusContainer
-	} = {}) {
-		var inst = {brickBuffer: [], _brickCountCap: BrickCountCap, _statusContainer: StatusContainer};
+	} = {}, PassParams = {}) {
+		var inst = {brickBuffer: [], _brickCountCap: BrickCountCap, _statusContainer: StatusContainer, callerParams: PassParams};
 
 		this._instances.push(inst);
 		if(typeof StatusContainer !== "undefined") {
