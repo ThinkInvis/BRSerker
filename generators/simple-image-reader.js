@@ -48,7 +48,27 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 		if(inst.imgData[inst.currI+3]/255 < inst.alphaCutoff) { //TODO: true transparency, a lot of things don't pass it through right so this is the best there is right now
 			inst.colors.push("skip");
 		} else {
-			inst.colors.push(ColorQuantize(currPx, brsColorsetRGB).Color);
+			var ncl;
+			switch(inst.quantmode) {
+				case "post":
+					ncl = [
+						Math.round(currPx[0]*inst.postR)/inst.postR,
+						Math.round(currPx[1]*inst.postG)/inst.postG,
+						Math.round(currPx[2]*inst.postB)/inst.postB,
+						Math.round(currPx[3]*inst.postA)/inst.postA
+					];
+					break;
+				case "brs":
+					ncl = ColorQuantize(currPx, brsColorsetRGB).Color;
+					break;
+				case "bls":
+					ncl = ColorQuantize(currPx, blsColorsetRGB).Color;
+					break;
+				default:
+				case "none":
+					ncl = currPx;
+			}
+			inst.colors.push(ncl);
 		}
 		inst.currI += 4;
 		return inst.currI >= inst.maxI;
@@ -183,6 +203,14 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 		PxScale: $("<input>", {"type":"number", "class":"opt-half opt-input", "min":1, "max":50, "value":1, "step":1}),
 		ModeLabel: $("<span>", {"class":"opt-half","text":"Build Horizontal:"}),
 		Mode: $("<input>", {"type":"checkbox", "class":"opt-half opt-input"}),
+		QuantizeLabel: $("<span>", {"class":"opt-half","text":"Quantize:"}),
+		Quantize: $("<select class='opt-half opt-input'><option value='none'>None</option><option value='brs' selected>BRS Colorset</option><option value='bls'>BLS Colorset</option><option value='post'>Posterize</option></select>"),
+		PosterizeLabelX: $("<span>", {"class":"opt-half","text":"- Posterize level:","style":"display:none"}),
+		PosterizeR: $("<input>", {"type":"number", "class":"opt-quarter opt-input", "min":1, "max":16, "value":4, "step":1, "style":"display:none"}),
+		PosterizeG: $("<input>", {"type":"number", "class":"opt-quarter opt-input", "min":1, "max":16, "value":4, "step":1, "style":"display:none"}),
+		PosterizeLabelY: $("<span>", {"class":"opt-half","html":"&nbsp;&nbsp;&nbsp;(RG/BA stages)","style":"display:none"}),
+		PosterizeB: $("<input>", {"type":"number", "class":"opt-quarter opt-input", "min":1, "max":16, "value":4, "step":1, "style":"display:none"}),
+		PosterizeA: $("<input>", {"type":"number", "class":"opt-quarter opt-input", "min":1, "max":16, "value":4, "step":1, "style":"display:none"}),
 		OptModeLabel: $("<span>", {"class":"opt-half","text":"Optimize:"}),
 		OptMode: $("<select class='opt-half opt-input'><option value='none'>None</option><option value='x' selected>X</option><option value='y'>Y</option></select>"),
 		AlphaCutoffLabel: $("<span>", {"class":"opt-half","text":"Alpha cutoff:"}),
@@ -200,9 +228,17 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 		inst.optMode = this.controls.OptMode.val();
 		inst.fileName = this.controls.Reader.get(0).files[0];
 		inst.alphaCutoff = this.controls.AlphaCutoff.val()*1;
+		
+		inst.quantmode = this.controls.Quantize.val();
+		inst.postR = this.controls.PosterizeR.val();
+		inst.postG = this.controls.PosterizeG.val();
+		inst.postB = this.controls.PosterizeB.val();
+		inst.postA = this.controls.PosterizeA.val();
 	}
 });
 var o = new Option(GenName, GenName);
 $(o).html(GenName);
 $("#generator-type").append(o);
 Generators[GenName].OptionElement = o;
+
+ParentOptionInput(Generators[GenName].controls.Quantize, [Generators[GenName].controls.PosterizeLabelX,Generators[GenName].controls.PosterizeLabelY, Generators[GenName].controls.PosterizeR, Generators[GenName].controls.PosterizeG, Generators[GenName].controls.PosterizeB, Generators[GenName].controls.PosterizeA], ["post"]);

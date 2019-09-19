@@ -25,6 +25,24 @@ var LinkNumInputs = function(i1, i2, min, max, dft1, dft2, margin=0) {
 	i2.val(dft2);
 }
 
+//links any number of other controls [arri2] to an option input [i1] such that the other controls are hidden unless [i1]'s selected option has any of the values in [optsAllow]
+var ParentOptionInput = function(i1, arri2, optsAllow) {
+	i1.data("childInputCount", arri2.length);
+	for(var i = 0; i < arri2.length; i++) {
+		i1.data("childInput" + i, arri2[i]);
+	}
+	i1.change(function() {
+		var doTogg = optsAllow.includes(i1.val());
+		for(var i = 0; i < i1.data("childInputCount"); i++) {
+			var iN = i1.data("childInput" + i);
+			if(doTogg)
+				iN.slideDown(100);
+			else
+				iN.slideUp(100);
+		}
+	});
+}
+
 //% operator is signed remainder, not modulus -- works differently on negative numbers
 var Mod = function(n, p) {
 	return n - p * Math.floor(n/p);
