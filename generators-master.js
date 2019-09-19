@@ -119,7 +119,7 @@ $("#btn-generate").click(function() {
 		return;
 	}
 	GenDisable();
-	var rprm = currGen.generate({BrickCountCap:MASTER_BRICK_LIMIT-BrickList.length, StatusContainer:$("#status-container")});
+	var rprm = currGen.generate({BrickCountCap:MASTER_BRICK_LIMIT-BrickList.length, StatusContainer:$("#status-container")}, {"BrickList":BrickList});
 	GenRunning = rprm;
 	$.when(rprm).done(function(buf) {
 		if(typeof buf === "undefined" || buf.length == 0) {

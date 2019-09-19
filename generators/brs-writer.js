@@ -91,7 +91,7 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(fu
 })], {
 	Controls: {},
 	OnSetup: function(inst) {
-		inst.bricks = BrickList; //TODO: can this be dehardcoded (from generator-master) somehow? a "required special properties" object that gets indicated to the generator caller?
+		inst.bricks = inst.callerParams.BrickList;
 		
 		if(inst.bricks.length == 0) {
 			inst.abort = "No bricks to save";
