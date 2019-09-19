@@ -102,7 +102,7 @@ class StagedBrickGenerator {
 		OnSetup = function() {},
 		OnFinalize = function() {},
 		StatusText = gName,
-		Description = "I generate bricks.",
+		Description = "Generates bricks.",
 		StatusContainer
 	} = {}) {
 		this.name = gName;

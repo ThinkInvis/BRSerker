@@ -72,7 +72,8 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(fu
 		inst.SVar = this.controls.VarColorS.val()*1;
 		inst.VBasis = this.controls.BaseColorV.val()*1;
 		inst.VVar = this.controls.VarColorV.val()*1;
-	}
+	},
+	Description: "Generates random walls designed to look like cobblestone or slate."
 });
 
 LinkNumInputs(Generators[GenName].controls.MinBrick, Generators[GenName].controls.MaxBrick, 1, 10, 1, 6);

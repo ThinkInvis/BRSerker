@@ -108,7 +108,8 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [{apply: function(inst, 
 	},
 	OnPause: function(inst) {
 		return "Loading BLS... " + inst.currLine + "/" + inst.lines.length;
-	}
+	},
+	Description: "Loads bricks and related data from a Blockland save file (.BLS)."
 });
 var o = new Option(GenName, GenName);
 $(o).html(GenName);

@@ -611,16 +611,21 @@ gtyp.change(function() {
 	var jthis = $(this);
 	var nprev = jthis.data("prev");
 	var ncurr = jthis.val();
+	var jdesc = $('#generator-descr');
 	
 	currGen = false;
 	
 	if(Generators[nprev]) {
 		cgen.slideUp(100);
 		Generators[nprev].removeControls(cgen);
+		jdesc.slideUp(100);
+		jdesc.text('');
 	} if(Generators[ncurr]) {
 		Generators[ncurr].applyControls(cgen);
 		cgen.slideDown(100);
 		currGen = Generators[ncurr];
+		jdesc.slideDown(100);
+		jdesc.text(currGen.description);
 	}
 	
 	jthis.data("prev",ncurr);

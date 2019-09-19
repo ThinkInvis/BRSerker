@@ -129,7 +129,8 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(fu
 		a.remove();*/
 		
 		BlobDownload("generated.brs", [new Int8Array(nbd)], "octet/stream");
-	}
+	},
+	Description: "Saves bricks to a Brickadia save file (.BRS). Will retain information from BrsReader!"
 });
 var o = new Option(GenName, GenName);
 $(o).html(GenName);

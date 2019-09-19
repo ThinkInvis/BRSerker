@@ -234,7 +234,8 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 		inst.postG = this.controls.PosterizeG.val();
 		inst.postB = this.controls.PosterizeB.val();
 		inst.postA = this.controls.PosterizeA.val();
-	}
+	},
+	Description: "Efficiently generates bricks based on an image file."
 });
 var o = new Option(GenName, GenName);
 $(o).html(GenName);

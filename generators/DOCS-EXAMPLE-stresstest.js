@@ -67,7 +67,7 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(fu
 	//	GenCancel: The generator code threw a pseudo-exception by setting inst.abort to any non-undefined value.
 })], { //The following are all optional parameters provided for the StagedBrickGenerator.
 	StatusText: "StressTesting...", //Initial text that will appear in the status popup, and stay there if you don't change it with SBG_SlowIterator's onStagePause (or manually). Defaults to the generator's name.
-	Description: "I generate lots of bricks real damn fast.", //Unused in this app (for now). Defaults to "I generate bricks."
+	Description: "Generates lots of bricks real damn fast... to help with testing stress. Also serves as documentation/help for the StagedBrickGenerator class!", //Unused in this app (for now). Defaults to "I generate bricks."
 	Controls: { //A list of JQuery element handles that, in this app, will be appended to the Generator Options UI area when this generator is selected in the menu. When another generator is selected, these will be detached before new options are added. Defaults to nothing.
 		BrickCountLabel: $("<span class='opt-half'>Brick count (10^n):</span>"),
 		BrickCount: $("<input>", {"type": "number", "min": 0, "max": 6, "value": 4, "step": 0.1, "class": "opt-half opt-input"}),

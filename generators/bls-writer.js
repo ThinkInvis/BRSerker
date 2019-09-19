@@ -78,7 +78,8 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(fu
 		inst.lines.push("");
 		var bytes = new TextEncoder("windows-1252", {NONSTANDARD_allowLegacyEncoding: true}).encode(inst.lines.join("\r\n"));
 		BlobDownload("generated.bls", [bytes], "text/plain");
-	}
+	},
+	Description: "Saves bricks to a Blockland save file (.BLS). Will retain information from BlsReader!"
 });
 var o = new Option(GenName, GenName);
 $(o).html(GenName);

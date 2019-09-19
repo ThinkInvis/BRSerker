@@ -110,7 +110,8 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [{apply: function(inst, 
 			return;
 		}
 		inst.fileObj = this.controls.Reader.get(0).files[0];
-	}
+	},
+	Description: "Loads bricks and related data from a Brickadia save file (.BRS)."
 });
 var o = new Option(GenName, GenName);
 $(o).html(GenName);
