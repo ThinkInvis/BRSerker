@@ -45,28 +45,34 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [{apply: function(inst, 
 			bsize.y = 1;
 			bsize.z = 3;
 			bmatch = "Cone";
+			break;
 		case "B_1x1_Round":
 			bsize.x = 1;
 			bsize.y = 1;
 			bsize.z = 3;
 			bmatch = "Round";
+			break;
 		case "B_1x1F_Round":
 			bsize.x = 1;
 			bsize.y = 1;
 			bsize.z = 1;
 			bmatch = "Round";
+			break;
 		case "B_2x2_Round":
 			bsize.x = 2;
 			bsize.y = 2;
 			bsize.z = 3;
 			bmatch = "Round";
+			break;
 		case "B_2x2F_Round":
 			bsize.x = 2;
 			bsize.y = 2;
 			bsize.z = 1;
 			bmatch = "Round";
+			break;
 		case "PB_DefaultRampCorner":
 			bmatch = "RampCorner";
+			break;
 		case "PB_DefaultRamp":
 			bmatch = "Ramp";
 			break;

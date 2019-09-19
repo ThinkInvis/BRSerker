@@ -36,8 +36,8 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(fu
 				assetname = "PB_DefaultBrick";
 		}
 		owner = {
-			name: 'Unknown',
-			id: '00000000-0000-0000-0000-000000000000'
+			name: 'PUBLIC',
+			id: 'FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF'
 		}
 		mtlname = inst.defaultMtl;
 	}
@@ -65,18 +65,22 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(fu
 	}
 	else nb.color = colorind;
 	
-	if(typeof tb.BrsData.IsProcedural === "undefined" || tb.BrsData.IsProcedural) //TODO: make generators set this
-		nb.size = [Math.floor(tb.BoundingBox.y*5), Math.floor(tb.BoundingBox.x*5), Math.floor(tb.BoundingBox.z*2)];
-	else
+	nb.direction = tb.FacingIndex;
+	
+	if(typeof tb.BrsData.IsProcedural === "undefined" || tb.BrsData.IsProcedural) { //TODO: make generators set this
+		nb.size = [tb.BoundingBox.y*5, tb.BoundingBox.x*5, tb.BoundingBox.z*2];
+		nb.size = [Math.floor(nb.size[0]),Math.floor(nb.size[1]),Math.floor(nb.size[2])];
+		
+	} else
 		nb.size = [0, 0, 0];
 	
 	//nb.color = [tb.Color.r*255,tb.Color.g*255,tb.Color.b*255,255];
 	
 	nb.position = [tb.Position.y*10, tb.Position.x*10, tb.Position.z*4];
-	nb.direction = tb.FacingIndex;
 	nb.rotation = tb.RotationIndex;
 	nb.collision = tb.Collision;
 	nb.visibility = tb.Rendering;
+	
 	
 	inst.brsdata.bricks.push(nb);
 	
@@ -118,7 +122,7 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(fu
 		var nbd = BRS.write(inst.brsdata);
 		BlobDownload("generated.brs", [nbd], "octet/stream");
 	},
-	Description: "Saves bricks to a Brickadia save file (.BRS). Will retain information from BrsReader!<br><b><span class='warntri'></span>WARNING: DO NOT LOAD GENERATED FILES WITH OWNERSHIP</b> (it's bugged and will crash your game)"
+	Description: "Saves bricks to a Brickadia save file (.BRS). Will retain information from BrsReader!"
 });
 var o = new Option(GenName, GenName);
 $(o).html(GenName);

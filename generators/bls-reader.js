@@ -67,10 +67,16 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [{apply: function(inst, 
 			}
 		}
 		var words = bwords[1].split(' ');
+		
+		var nrot = words[4]*1;
+		var arot = bmatch.AddRot;
+		if(bmatch.Orientation == 5 && (nrot == 0 || nrot == 2)) arot += 2;
+		if(bmatch.Name == "RampCorner" && bmatch.Orientation == 5) arot -= 1;
+		
 		inst.brickBuffer.push(new InternalBrick(
 			new THREE.Vector3(bmatch.SizeX, bmatch.SizeY, bmatch.SizeZ),
 			new THREE.Vector3(words[1]*2, words[2]*2, words[3]*5),
-			Mod(2-words[4],4),
+			Mod(nrot+arot,4),
 			new THREE.Color(inst.colorset[words[6]*1][0],inst.colorset[words[6]*1][1],inst.colorset[words[6]*1][2]),
 			0, { //TODO: material index
 				InternalName: bmatch.Name,
@@ -78,7 +84,8 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [{apply: function(inst, 
 				BlocklandName: bwords[0],
 				BlocklandData: {
 					ExtraLines: [],
-					ExtraRotation: bmatch.AddRot,
+					//ExtraRotation: bmatch.AddRot,
+					ExtraRotation: arot,
 					ColorFX: words[8],
 					ShapeFX: words[9],
 					Raycasting: words[10],
