@@ -18,8 +18,10 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(fu
 		nl += tb.Collision ? "1 " : "0 ";
 		nl += tb.Rendering ? "1 " : "0 ";
 		inst.lines.push(nl);
-		for(var i = 0; i < tb.BlsData.ExtraLines.length; i++) {
-			inst.lines.push(tb.BlsData.ExtraLines[i]);
+		if(typeof tb.BlsData.ExtraLines !== "undefined") {
+			for(var i = 0; i < tb.BlsData.ExtraLines.length; i++) {
+				inst.lines.push(tb.BlsData.ExtraLines[i]);
+			}
 		}
 	} else { //brick was internally generated, setup placeholder properties
 		var nl = tbn.Name + '" '; //name
