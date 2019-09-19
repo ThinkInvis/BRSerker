@@ -203,7 +203,7 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 		PxScale: $("<input>", {"type":"number", "class":"opt-half opt-input", "min":1, "max":50, "value":1, "step":1}),
 		ModeLabel: $("<span>", {"class":"opt-half","text":"Build Horizontal:"}),
 		Mode: $("<input>", {"type":"checkbox", "class":"opt-half opt-input"}),
-		QuantizeLabel: $("<span>", {"class":"opt-half","text":"Color Quantize:"}),
+		QuantizeLabel: $("<span>", {"class":"opt-half","text":"Color Quantize:"}), //TODO: add this as a standalone generator that operates on existing bricks, can replace the hardcoded quantize in cobblewall among oithers
 		Quantize: $("<select class='opt-half opt-input'><option value='none'>None</option><option value='brs' selected>BRS Colorset</option><option value='bls'>BLS Colorset</option><option value='post'>Posterize</option></select>"),
 		PosterizeLabelX: $("<span>", {"class":"opt-half","text":"- Posterize level:","style":"display:none"}),
 		PosterizeR: $("<input>", {"type":"number", "class":"opt-quarter opt-input", "min":1, "max":16, "value":4, "step":1, "style":"display:none"}),
