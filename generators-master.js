@@ -70,17 +70,15 @@ $("#btn-clear").click(function() {
 });
 $("#btn-shift").click(function() {
 	GenDisable();
-	var addX = $("#shiftx").val() * 1;
-	var addY = $("#shifty").val() * 1;
-	var addZ = $("#shiftz").val() * 1;
-	for(var i = 0; i < BrickList.length; i++) {
-		BrickList[i].Position.x += addX;
-		BrickList[i].Position.y += addY;
-		BrickList[i].Position.z += addZ;
-	}
-	GenEnable();
-	if($("#opt-autobake").get(0).checked)
-		GenGeoRebuild();
+	
+	var rprm = Generators["BrickShifter"].generate({StatusContainer:$("#status-container")}, {"BrickList":BrickList, X:$("#shiftx").val()*1, Y:$("#shifty").val()*1, Z:$("#shiftz").val()*1}); //generators/internal/BrickShifter
+	GenRunning = rprm;
+	$.when(rprm).done(function() {
+		GenRunning = undefined;
+		GenEnable();
+		if($("#opt-autobake").get(0).checked)
+			GenGeoRebuild(); //generators/internal/MeshBaker
+	});
 });
 
 gtyp.data("prev",gtyp.val());
