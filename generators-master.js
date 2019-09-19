@@ -40,13 +40,13 @@ ClearBrickList();
 //		or add cancel buttons on status tickets?
 var GenDisable = function() {
 	$(".gen-lock").prop("disabled", true);
-	$("#btn-generate").prop("disabled", true).finish().animate({width: 'toggle'},{duration:100});
-	$("#btn-cancel").prop("disabled", false).finish().delay(10).animate({width: 'toggle'},{duration:100});
+	$("#btn-generate").prop("disabled", true).finish().animate({width: 'hide'},{duration:100});
+	$("#btn-cancel").prop("disabled", false).finish().delay(10).animate({width: 'show'},{duration:100});
 }
 var GenEnable = function() {
 	$(".gen-lock").prop("disabled", false);
-	$("#btn-generate").prop("disabled", false).finish().delay(10).animate({width: 'toggle'},{duration:100});
-	$("#btn-cancel").prop("disabled", true).finish().animate({width: 'toggle'},{duration:100});
+	$("#btn-generate").prop("disabled", false).finish().delay(10).animate({width: 'show'},{duration:100});
+	$("#btn-cancel").prop("disabled", true).finish().animate({width: 'hide'},{duration:100});
 }
 
 
@@ -75,9 +75,10 @@ $("#btn-shift").click(function() {
 	GenRunning = rprm;
 	$.when(rprm).done(function() {
 		GenRunning = undefined;
-		GenEnable();
 		if($("#opt-autobake").get(0).checked)
 			GenGeoRebuild(); //generators/internal/MeshBaker
+		else
+			GenEnable();
 	});
 });
 
