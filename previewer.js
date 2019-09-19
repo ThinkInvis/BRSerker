@@ -151,8 +151,8 @@ var PvwLight = new THREE.DirectionalLight(0xffffff, 1.0);
 PvwScene.add(PvwLight);
 var plgeom = new THREE.SphereGeometry(5);
 var plmat = new THREE.MeshBasicMaterial({color: 0xffffff});
-var plmesh = new THREE.Mesh(plgeom, plmat);
-PvwLight.add(plmesh);
+var PvwLightMesh = new THREE.Mesh(plgeom, plmat);
+PvwScene.add(PvwLightMesh);
 
 //Bind preview controls for lighting
 var updatePvwLight = function() {
@@ -196,6 +196,12 @@ var PvwAnimate = function() {
 				);
 			}
 		}
+		
+		PvwLightMesh.position.set(
+			PvwLight.position.x + PvwCamera.position.x,
+			PvwLight.position.y + PvwCamera.position.y,
+			PvwLight.position.z + PvwCamera.position.z
+		);
 		PvwRenderer.render(PvwScene, PvwCamera);
 	}
 	PvwStats.end();
