@@ -46,7 +46,8 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(fu
 		}
 	);
 	//...and push it to the internal brick buffer. This is what will be passed to whatever called StagedBrickGenerator.generate() once everything's done.
-	inst.brickBuffer.push(brk);
+	//AutoOffset converts the brick from corner positioning (easier to keep track of during generation) to center positioning (required by renderer and both save formats), and returns the brick object.
+	inst.brickBuffer.push(brk.AutoOffset());
 	
 	//This is another OnSetup variable; you can use anything you want as long as it returns true when generation is complete.
 	inst.Iter ++;

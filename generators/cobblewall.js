@@ -23,7 +23,7 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(fu
 				InternalName: "Basic",
 				BlocklandName: "1x" + newSize + "f"
 			}
-		)
+		).AutoOffset();
 		inst.brickBuffer.push(brk);
 		
 		inst.X += newSize;

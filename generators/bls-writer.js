@@ -23,7 +23,7 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(fu
 		}
 	} else { //brick was internally generated, setup placeholder properties
 		var nl = tbn.Name + '" '; //name
-		nl += (tb.Position.x+tb.BoundingBox.x/2)/2 + " " + (tb.Position.y+tb.BoundingBox.y/2)/2 + " " + (tb.Position.z+tb.BoundingBox.z/2)/5 + " "; //position
+		nl += tb.Position.x/2 + " " + tb.Position.y/2 + " " + tb.Position.z/5 + " "; //position
 		nl += (tb.RotationIndex + tbn.Rotation) * 1 + " "; //rotation index
 		nl += "0 "; //is baseplate
 		nl += ColorQuantize([tb.Color.r, tb.Color.g, tb.Color.b, 1.0], brsColorsetRGB).SetI + " "; //colorset 	index

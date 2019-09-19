@@ -419,7 +419,6 @@ var SBG_SI_MeshBaker = new SBG_SlowIterator(function(inst) {
 	
 	var tmtx = new THREE.Matrix4();
 	tmtx.multiply(new THREE.Matrix4().makeTranslation(currBrick.Position.x, currBrick.Position.y, currBrick.Position.z/3));
-	tmtx.multiply(new THREE.Matrix4().makeTranslation(currBrick.BoundingBox.x/2, currBrick.BoundingBox.y/2, currBrick.BoundingBox.z/6));
 	switch(currBrick.FacingIndex) {
 		case 0: //+z to +x
 			tmtx.multiply(new THREE.Matrix4().makeRotationY(3.14159265/2));

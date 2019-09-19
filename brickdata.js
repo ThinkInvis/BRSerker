@@ -291,4 +291,9 @@ class InternalBrick {
 		this.Rendering = Visible;
 		this.Collision = Collides;
 	}
+	
+	AutoOffset() {
+		this.Position.addScaledVector(this.BoundingBox, 0.5);
+		return this;
+	}
 }
