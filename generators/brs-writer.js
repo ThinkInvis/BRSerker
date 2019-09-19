@@ -115,22 +115,10 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(fu
 		inst.maxI = inst.bricks.length;
 	},
 	OnFinalize: function(inst) {
-		console.log(inst.brsdata);
 		var nbd = BRS.write(inst.brsdata);
-		console.log(nbd);
-		
-		/*var a = document.createElement("a");
-		document.body.appendChild(a);
-		a.style = "display: none";
-		var filUrl = URL.createObjectURL(nbb);
-		a.href = filUrl;
-		a.download = "generated.brs";
-		a.click();
-		a.remove();*/
-		
-		BlobDownload("generated.brs", [new Int8Array(nbd)], "octet/stream");
+		BlobDownload("generated.brs", [nbd], "octet/stream");
 	},
-	Description: "Saves bricks to a Brickadia save file (.BRS). Will retain information from BrsReader!"
+	Description: "Saves bricks to a Brickadia save file (.BRS). Will retain information from BrsReader!<br><b><span class='warntri'></span>WARNING: DO NOT LOAD GENERATED FILES WITH OWNERSHIP</b> (it's bugged and will crash your game)"
 });
 var o = new Option(GenName, GenName);
 $(o).html(GenName);

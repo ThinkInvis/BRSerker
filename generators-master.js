@@ -94,13 +94,13 @@ gtyp.change(function() {
 		cgen.slideUp(100);
 		Generators[nprev].removeControls(cgen);
 		jdesc.slideUp(100);
-		jdesc.text('');
+		jdesc.html('');
 	} if(Generators[ncurr]) {
 		Generators[ncurr].applyControls(cgen);
 		cgen.slideDown(100);
 		currGen = Generators[ncurr];
 		jdesc.slideDown(100);
-		jdesc.text(currGen.description);
+		jdesc.html(currGen.description);
 	}
 	
 	jthis.data("prev",ncurr);
