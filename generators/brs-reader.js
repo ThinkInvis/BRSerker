@@ -38,7 +38,7 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [{apply: function(inst, 
 		col = currBrick.color;
 	
 	var bmatch = "Basic";
-	var bsize = new THREE.Vector3(currBrick.size[0]/5, currBrick.size[1]/5, currBrick.size[2]/2);
+	var bsize = new THREE.Vector3(currBrick.size[1]/5, currBrick.size[0]/5, currBrick.size[2]/2);
 	switch(currAsset) {
 		case "B_1x1_Cone":
 			bsize.x = 1;
@@ -78,7 +78,7 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [{apply: function(inst, 
 	
 	inst.brickBuffer.push(new InternalBrick(
 		bsize,
-		new THREE.Vector3(currBrick.position[0]/10, currBrick.position[1]/10, currBrick.position[2]/4),
+		new THREE.Vector3(currBrick.position[1]/10, currBrick.position[0]/10, currBrick.position[2]/4), //brs uses Y-right, X-forward, Z-up; we use X-right, Y-forward, Z-up
 		currBrick.rotation,
 		new THREE.Color(col[0]/255,col[1]/255,col[2]/255),
 		0, { //TODO: material index
