@@ -149,7 +149,7 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 					{
 						InternalName: "Basic"
 					}
-				));
+				).AutoOffset());
 			}
 			inst.currX += 1 + seekAhead;
 			if(inst.currX == inst.maxX) {
