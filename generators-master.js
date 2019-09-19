@@ -53,16 +53,13 @@ var gtyp = $("#generator-type");
 var cgen = $("#controls-gendynamic");
 
 $("#btn-bake").click(function() {
-	GenGeoRebuild();
+	GenGeoRebuild(); //generators/internal/MeshBaker
 });
 $("#btn-clear").click(function() {
 	GenDisable();
-	/*for(var i = BrickList.length - 1; i >= 0; i--) {
-		BrickList.pop();
-	}*/
 	ClearBrickList();
 	if($("#opt-livepreview").get(0).checked)
-		NukeGeometry();
+		NukeGeometry(); //generators/internal/MeshBaker
 	BrickGeom = [];
 	GenEnable();
 });
@@ -121,7 +118,7 @@ $("#btn-generate").click(function() {
 		}
 		GenEnable();
 		if($("#opt-autobake").get(0).checked)
-			GenGeoRebuild();
+			GenGeoRebuild(); //generators/internal/MeshBaker
 	});
 });
 
