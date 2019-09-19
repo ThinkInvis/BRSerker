@@ -477,6 +477,21 @@ var SBG_SI_MeshBaker = new SBG_SlowIterator(function(inst) {
 	atrs.setZ(currBufPos, currBrick.BoundingBox.z/3);
 	
 	currBuf.maxInstancedCount++;
+	
+	
+	//calculation for bbox display
+	var lx = currBrick.Position.x - currBrick.BoundingBox.x/2;
+	var ux = currBrick.Position.x + currBrick.BoundingBox.x/2;
+	var ly = currBrick.Position.y - currBrick.BoundingBox.y/2;
+	var uy = currBrick.Position.y + currBrick.BoundingBox.y/2;
+	var lz = currBrick.Position.z - currBrick.BoundingBox.z/2;
+	var uz = currBrick.Position.z + currBrick.BoundingBox.z/2;
+	if(lx < inst.bbox[0]) inst.bbox[0] = lx;
+	if(ly < inst.bbox[1]) inst.bbox[1] = ly;
+	if(lz < inst.bbox[2]) inst.bbox[2] = lz;
+	if(ux > inst.bbox[3]) inst.bbox[3] = ux;
+	if(uy > inst.bbox[4]) inst.bbox[4] = uy;
+	if(uz > inst.bbox[5]) inst.bbox[5] = uz;
 
 	inst.currI ++;
 	return inst.currI == inst.maxI || inst.currI == MASTER_BRICK_LIMIT; //TODO: something about SBG is allowing one more brick than the limit to be generated
@@ -487,11 +502,32 @@ var SBG_SI_MeshBaker = new SBG_SlowIterator(function(inst) {
 	OnStageSetup: function(inst) {
 		inst.currI = 0;
 		inst.maxI = inst.bricks.length;
+		inst.bbox = [0, 0, 0, 0, 0, 0];
 		if(inst.maxI == 0) inst.abort = "No bricks to bake";
 		BrickGeom = [];
 	},
 	OnStagePause: function(inst) {
 		return "Baking mesh... " + Math.floor(inst.currI/inst.maxI*100) + "%";
+	},
+	OnStageFinalize: function(inst) {
+		inst.bsize = [
+			inst.bbox[3]-inst.bbox[0],
+			inst.bbox[4]-inst.bbox[1],
+			(inst.bbox[5]-inst.bbox[2])/3,
+		];
+		inst.bcenter = [
+			inst.bbox[0]+inst.bsize[0]/2,
+			inst.bbox[1]+inst.bsize[1]/2,
+			inst.bbox[2]/3+inst.bsize[2]/2
+		];
+		var nzwhole = Math.floor(inst.bsize[2]);
+		var nzflat = Math.floor((inst.bsize[2] - nzwhole)*3);
+		if(nzflat == 0) {
+			$("#label-bounds").text("Size: " + inst.bsize[0].toFixed(0) + "x" + inst.bsize[1].toFixed(0) + "x" + nzwhole.toFixed(0));
+		} else {
+			$("#label-bounds").text("Size: " + inst.bsize[0].toFixed(0) + "x" + inst.bsize[1].toFixed(0) + "x(" + nzwhole.toFixed(0) + "+" + nzflat.toFixed(0) + "f)");
+		}
+		$("#label-cog").text("CoG: " + inst.bcenter[0].toFixed(1) + ", " + inst.bcenter[1].toFixed(1) + ", " + inst.bcenter[2].toFixed(1));
 	}
 })
 
@@ -507,19 +543,6 @@ var GenGeoRebuild = function() {
 		GenGeoStatus = undefined;
 		
 		ForceUpdateGeometry();
-		
-		/*GenGeometry.computeBoundingBox();
-		var nsz = new THREE.Vector3();
-		GenGeometry.boundingBox.getSize(nsz);
-		var nzwhole = Math.floor(nsz.z);
-		var nzflat = Math.floor((nsz.z - nzwhole)*3);
-		if(nzflat == 0) {
-			$("#label-bounds").text("Size: " + nsz.x.toFixed(0) + "x" + nsz.y.toFixed(0) + "x" + nzwhole.toFixed(0));
-		} else {
-			$("#label-bounds").text("Size: " + nsz.x.toFixed(0) + "x" + nsz.y.toFixed(0) + "x(" + nzwhole.toFixed(0) + "+" + nzflat.toFixed(0) + "f)");
-		}
-		GenGeometry.boundingBox.getCenter(nsz);
-		$("#label-cog").text("CoG: " + nsz.x.toFixed(1) + ", " + nsz.y.toFixed(1) + ", " + nsz.z.toFixed(1));*/
 		
 		if(!$("#opt-livepreview").is(':checked'))
 			PvwRenderer.render(PvwScene, PvwCamera);
