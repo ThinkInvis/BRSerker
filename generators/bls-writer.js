@@ -29,8 +29,8 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(fu
 		nl += (tb.RotationIndex + tbn.Rotation) * 1 + " "; //rotation index
 		nl += "0 "; //is baseplate
 		nl += ColorQuantize([tb.Color.r, tb.Color.g, tb.Color.b, 1.0], brsColorsetRGB).SetI + " "; //colorset 	index
-		nl += "  "; //print ID
-		nl += "0 0 1"; //colorfx, shapefx, ray
+		nl += " "; //print ID
+		nl += "0 0 1 "; //colorfx, shapefx, ray
 		nl += tb.Collision ? "1 " : "0 "; //col
 		nl += tb.Rendering ? "1 " : "0 "; //ren
 		inst.lines.push(nl);

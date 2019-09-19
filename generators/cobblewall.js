@@ -20,8 +20,7 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(fu
 			newColor,
 			0,
 			{
-				InternalName: "Basic",
-				BlocklandName: "1x" + newSize + "f"
+				InternalName: "Basic"
 			}
 		).AutoOffset();
 		inst.brickBuffer.push(brk);
