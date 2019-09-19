@@ -365,26 +365,29 @@ var SBG_SI_MeshBaker = new SBG_SlowIterator(function(inst) {
 	tmtx.multiply(new THREE.Matrix4().makeTranslation(currBrick.Position.x, currBrick.Position.y, currBrick.Position.z/3));
 	switch(currBrick.FacingIndex) {
 		case 0: //+z to +x
-			tmtx.multiply(new THREE.Matrix4().makeRotationY(3.14159265/2));
+			tmtx.multiply(new THREE.Matrix4().makeRotationX(-3.14159265/2));
+			tmtx.multiply(new THREE.Matrix4().makeRotationZ(3.14159265));
 			break;
 		case 2: //+z to +y
-			tmtx.multiply(new THREE.Matrix4().makeRotationX(3.14159265/2));
+			tmtx.multiply(new THREE.Matrix4().makeRotationY(3.14159265/2));
+			tmtx.multiply(new THREE.Matrix4().makeRotationZ(3.14159265/2));
 			break;
 		case 5: //+z to -z
 			tmtx.multiply(new THREE.Matrix4().makeRotationY(3.14159265));
 			tmtx.multiply(new THREE.Matrix4().makeRotationZ(3.14159265));
 			break;
 		case 1: //+z to -x
-			tmtx.multiply(new THREE.Matrix4().makeRotationY(-3.14159265/2));
+			tmtx.multiply(new THREE.Matrix4().makeRotationX(3.14159265/2));
 			break;
-		case 3: //+x to -y
-			tmtx.multiply(new THREE.Matrix4().makeRotationX(-3.14159265/2));
+		case 3: //+z to -y
+			tmtx.multiply(new THREE.Matrix4().makeRotationY(-3.14159265/2));
+			tmtx.multiply(new THREE.Matrix4().makeRotationZ(-3.14159265/2));
 			break;
 		case 4: //+z
 		default:
 			break;
 	}
-	tmtx.multiply(new THREE.Matrix4().makeRotationZ(currBrick.RotationIndex*3.14159265/2));
+	tmtx.multiply(new THREE.Matrix4().makeRotationZ((2-currBrick.RotationIndex)*3.14159265/2));
 	
 	var ii = 0;
 	var atr0 = currBuf.getAttribute('aInstanceMatrix0');

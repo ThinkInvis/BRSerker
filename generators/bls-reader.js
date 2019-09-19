@@ -70,7 +70,7 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [{apply: function(inst, 
 		inst.brickBuffer.push(new InternalBrick(
 			new THREE.Vector3(bmatch.SizeX, bmatch.SizeY, bmatch.SizeZ),
 			new THREE.Vector3(words[1]*2, words[2]*2, words[3]*5),
-			words[4],
+			Mod(2-words[4],4),
 			new THREE.Color(inst.colorset[words[6]*1][0],inst.colorset[words[6]*1][1],inst.colorset[words[6]*1][2]),
 			0, { //TODO: material index
 				InternalName: bmatch.Name,
