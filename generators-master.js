@@ -81,6 +81,59 @@ $("#btn-shift").click(function() {
 			GenEnable();
 	});
 });
+$("#btn-mirr").click(function() {
+	GenDisable;
+	
+	var rprm = Generators["BuildMirrorer"].generate({StatusContainer:$("#status-container")}, {
+		"BrickList":BrickList,
+		X:$("#bt-axisX").get(0).checked,
+		Y:$("#bt-axisY").get(0).checked,
+		Z:$("#bt-axisZ").get(0).checked
+	}); //generators/internal/BrickShifter
+	GenRunning = rprm;
+	$.when(rprm).done(function() {
+		GenRunning = undefined;
+			GenEnable();
+		if($("#opt-autobake").get(0).checked)
+			GenGeoRebuild(); //generators/internal/MeshBaker
+	});
+});
+$("#btn-rotCW").click(function() {
+	GenDisable;
+	
+	var rprm = Generators["BuildRotator"].generate({StatusContainer:$("#status-container")}, {
+		"BrickList":BrickList,
+		X:$("#bt-axisX").get(0).checked?-1:0,
+		Y:$("#bt-axisY").get(0).checked?-1:0,
+		Z:$("#bt-axisZ").get(0).checked?-1:0
+	}); //generators/internal/BrickShifter
+	GenRunning = rprm;
+	$.when(rprm).done(function() {
+		GenRunning = undefined;
+		if($("#opt-autobake").get(0).checked)
+			GenGeoRebuild(); //generators/internal/MeshBaker
+		else
+			GenEnable();
+	});
+});
+$("#btn-rotCCW").click(function() {
+	GenDisable;
+	
+	var rprm = Generators["BuildRotator"].generate({StatusContainer:$("#status-container")}, {
+		"BrickList":BrickList,
+		X:$("#bt-axisX").get(0).checked?1:0,
+		Y:$("#bt-axisY").get(0).checked?1:0,
+		Z:$("#bt-axisZ").get(0).checked?1:0
+	}); //generators/internal/BrickShifter
+	GenRunning = rprm;
+	$.when(rprm).done(function() {
+		GenRunning = undefined;
+		if($("#opt-autobake").get(0).checked)
+			GenGeoRebuild(); //generators/internal/MeshBaker
+		else
+			GenEnable();
+	});
+});
 
 gtyp.data("prev",gtyp.val());
 gtyp.change(function() {

@@ -38,6 +38,12 @@
 					<input type="number" id="shifty" step=1 valNoCache=0 class="opt-1-4 opt-input"></input>
 					<input type="number" id="shiftz" step=1 valNoCache=0 class="opt-1-4 opt-input"></input>
 					<button id="btn-shift" class="opt-1-4 gen-lock">Shift</button>
+					<span class="cb-container opt-input opt-1-4">X<input id="bt-axisX" type="checkbox" valNoCache=false></input></span>
+					<span class="cb-container opt-input opt-1-4">Y<input id="bt-axisY" type="checkbox"valNoCache=false></input></span>
+					<span class="cb-container opt-input opt-1-4">Z<input id="bt-axisZ" type="checkbox"valNoCache=false></input></span>
+					<button id="btn-mirr" class="opt-1-4 gen-lock">Mirror</button>
+					<button id="btn-rotCW" class="opt-1-2 gen-lock">Rotate CW</button>
+					<button id="btn-rotCCW" class="opt-1-2 gen-lock">Rotate CCW</button>
 				</div>
 				<div id="controls-generator" class="controls-subpanel">
 					<div class="controls-subpanel-title">Generation</div>
@@ -92,7 +98,7 @@
 		</script>
 		<script src="./generators-master.js"></script>
 		<script src="./generators/internal/MeshBaker.js"></script>
-		<script src="./generators/internal/BrickShifter.js"></script>
+		<script src="./generators/internal/BuildTransformers.js"></script>
 		<script src="./generators/cobblewall.js"></script>
 		<script src="./generators/brs-reader.js"></script>
 		<script src="./generators/brs-writer.js"></script>
