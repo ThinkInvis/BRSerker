@@ -195,21 +195,4 @@ class StagedBrickGenerator {
 			throw(this.name + " StagedBrickGenerator lost a reference to an instance somehow! Where did it go??");
 		}
 	}
-	
-	//TODO: test this
-	stopStage(promise) {
-		if(typeof promise._genInst !== "undefined") {
-			promise._genInst._extCancel = true;
-			return true;
-		}
-		return false;
-	}
-	stop(promise) {
-		if(typeof promise._genInst !== "undefined") {
-			promise._genInst._extCancelFatal = true;
-			promise._genInst._extCancel = true;
-			return true;
-		}
-		return false;
-	}
 }

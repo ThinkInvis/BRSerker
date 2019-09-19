@@ -44,8 +44,10 @@
 					<select id="generator-type" class="opt-3-4 opt-input gen-lock">
 						<option value="None">None</option>
 					</select>
-					<button id="btn-generate" class="opt-1-4 gen-lock">Generate</button>
-					<div id="generator-descr" style="width:100%;"></div>
+					<span class="opt-1-4" style="position:relative;">
+					<button id="btn-generate" style="width:100%;position:absolute;display:inline;left:0">Generate</button>
+					<button id="btn-cancel" style="width:100%;position:absolute;right:0;display:none" disabled=true>Cancel</button></span>
+					<div id="generator-descr" style="width:100%"></div>
 				</div>
 				<div id="controls-gendynamic" class="controls-subpanel">
 					<div class="controls-subpanel-title">Generator Options</div>
@@ -89,6 +91,7 @@
 			});
 		</script>
 		<script src="./generators-master.js"></script>
+		<script src="./generators/internal/MeshBaker.js"></script>
 		<script src="./generators/cobblewall.js"></script>
 		<script src="./generators/brs-reader.js"></script>
 		<script src="./generators/brs-writer.js"></script>

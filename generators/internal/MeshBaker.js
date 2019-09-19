@@ -481,7 +481,10 @@ var GenGeoRebuild = function() {
 	NukeGeometry();
 	GenGeoStatus = new StatusTicket($("#status-container"), {initText: "Baking mesh..."});
 	var rprm = $.Deferred();
-	SBG_SI_MeshBaker.apply({bricks: BrickList, _statusEnabled: true, _statusContainer: $("#status-container"), _ticket: GenGeoStatus}, rprm); //TODO: make a function for easier standalone use of stages like this, add an onDone callback?
+	var rpin = {bricks: BrickList, _statusEnabled: true, _statusContainer: $("#status-container"), _ticket: GenGeoStatus, _promise: rprm};
+	rprm._genInst = rpin;
+	GenRunning = rprm;
+	SBG_SI_MeshBaker.apply(rpin, rprm); //TODO: make a function for easier standalone use of stages like this, add an onDone callback?
 	$.when(rprm).done(function() {
 		GenGeoStatus.close();
 		GenGeoStatus = undefined;
@@ -492,5 +495,6 @@ var GenGeoRebuild = function() {
 			PvwRenderer.render(PvwScene, PvwCamera);
 		
 		GenEnable();
+		GenRunning = undefined;
 	});
 }

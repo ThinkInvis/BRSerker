@@ -7,6 +7,7 @@
 var Generators = {};
 var GeneratorNames = [];
 var currGen = false;
+var GenRunning;
 
 var MASTER_BRICK_LIMIT = 1000000; //may start dropping frames before this, but memory can probably handle this many thanks to InstancedBufferGeometry :)
 //initial memory required WITH NO ACTUAL BRICKS LOADED is something like 88kb per potential brick, for ~84MB/bricktype at 1mil bricks. however, this means that threejs's memory footprint for actually adding bricks is *very small* if not nothing... our own brickdata object takes about as much memory, maybe a bit more, than the initial buffer allocation. this is MUCH more efficient than the old "One True Geometry Object" approach (2GB+ memory at 100k bricks)!
@@ -39,9 +40,13 @@ ClearBrickList();
 //		or add cancel buttons on status tickets?
 var GenDisable = function() {
 	$(".gen-lock").prop("disabled", true);
+	$("#btn-generate").prop("disabled", true).finish().animate({width: 'toggle'},{duration:100});
+	$("#btn-cancel").prop("disabled", false).finish().delay(10).animate({width: 'toggle'},{duration:100});
 }
 var GenEnable = function() {
 	$(".gen-lock").prop("disabled", false);
+	$("#btn-generate").prop("disabled", false).finish().delay(10).animate({width: 'toggle'},{duration:100});
+	$("#btn-cancel").prop("disabled", true).finish().animate({width: 'toggle'},{duration:100});
 }
 
 
@@ -103,19 +108,29 @@ gtyp.change(function() {
 	jthis.data("prev",ncurr);
 });
 
+$("#btn-cancel").click(function() {
+	if(typeof GenRunning !== "undefined") {
+		GenRunning._genInst._extCancel = true;
+	}
+});
+
 $("#btn-generate").click(function() {
 	if(!currGen) {
 		return;
 	}
 	GenDisable();
-	$.when(currGen.generate({BrickCountCap:MASTER_BRICK_LIMIT-BrickList.length, StatusContainer:$("#status-container")})).done(function(buf) {
+	var rprm = currGen.generate({BrickCountCap:MASTER_BRICK_LIMIT-BrickList.length, StatusContainer:$("#status-container")});
+	GenRunning = rprm;
+	$.when(rprm).done(function(buf) {
 		if(typeof buf === "undefined" || buf.length == 0) {
+			GenRunning = undefined;
 			GenEnable();
 			return;
 		}
 		while(buf.length > 0) {
 			BrickList.push(buf.pop());
 		}
+		GenRunning = undefined;
 		GenEnable();
 		if($("#opt-autobake").get(0).checked)
 			GenGeoRebuild(); //generators/internal/MeshBaker
