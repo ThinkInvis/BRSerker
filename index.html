@@ -32,18 +32,18 @@
 				</div>
 				<div id="controls-buildtools" class="controls-subpanel">
 					<div class="controls-subpanel-title">Build Tools</div>
-					<button id="btn-clear" class="opt-full">Clear</button>
+					<button id="btn-clear" class="opt-full gen-lock">Clear</button>
 					<input type="number" id="shiftx" step=1 valNoCache=0 class="opt-quarter opt-input"></input>
 					<input type="number" id="shifty" step=1 valNoCache=0 class="opt-quarter opt-input"></input>
 					<input type="number" id="shiftz" step=1 valNoCache=0 class="opt-quarter opt-input"></input>
-					<button id="btn-shift" class="opt-quarter">Shift</button>
+					<button id="btn-shift" class="opt-quarter gen-lock">Shift</button>
 				</div>
 				<div id="controls-generator" class="controls-subpanel">
 					<div class="controls-subpanel-title">Generation</div>
-					<select id="generator-type" class="opt-threeqtr opt-input">
+					<select id="generator-type" class="opt-threeqtr opt-input gen-lock">
 						<option value="None">None</option>
 					</select>
-					<button id="btn-generate" class="opt-quarter">Generate</button>
+					<button id="btn-generate" class="opt-quarter gen-lock">Generate</button>
 					<div id="generator-descr" style="width:100%;"></div>
 				</div>
 				<div id="controls-gendynamic" class="controls-subpanel">
@@ -51,7 +51,7 @@
 				</div>
 				<div id="controls-preview" class="controls-subpanel">
 					<div class="controls-subpanel-title">Preview Options</div>
-					<button id="btn-bake" class="opt-full">Rebake Model</button>
+					<button id="btn-bake" class="opt-full gen-lock">Rebake Model</button>
 					<span class="opt-half">Autobake</span>
 					<input type="checkbox" id="opt-autobake" class="opt-half opt-input" valNoCache=true></input>
 					<span class="opt-half">Live Preview</span>

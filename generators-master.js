@@ -40,18 +40,10 @@ ClearBrickList();
 //TODO: change the generate button to (or slide-swap it with to be fancy) a cancel button
 //		or add cancel buttons on status tickets?
 var GenDisable = function() {
-	$("#btn-generate").prop("disabled", true);
-	$("#btn-bake").prop("disabled", true);
-	$("#btn-shift").prop("disabled", true);
-	$("#btn-clear").prop("disabled", true);
-	$("#generator-type").prop("disabled", true);
+	$(".gen-lock").prop("disabled", true);
 }
 var GenEnable = function() {
-	$("#btn-generate").prop("disabled", false);
-	$("#btn-bake").prop("disabled", false);
-	$("#btn-shift").prop("disabled", false);
-	$("#btn-clear").prop("disabled", false);
-	$("#generator-type").prop("disabled", false);
+	$(".gen-lock").prop("disabled", false);
 }
 
 
