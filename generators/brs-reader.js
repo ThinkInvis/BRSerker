@@ -85,7 +85,7 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [{apply: function(inst, 
 			InternalName: bmatch,
 			BrickadiaName: currAsset,
 			BrickadiaData: {
-				Owner: inst.brsdata.brick_owners[currBrick.owner_index],
+				Owner: inst.brsdata.brick_owners[currBrick.owner_index-1],
 				Material: inst.brsdata.materials[currBrick.material_index],
 				IsProcedural: currAsset.substring(0,3) == "PB_"
 			},
