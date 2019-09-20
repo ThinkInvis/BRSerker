@@ -42,6 +42,33 @@ var ParentOptionInput = function(i1, arri2, optsAllow) {
 		}
 	});
 }
+var ParentCheckboxInput = function(i1, arrChk, arrOff) {
+	i1.data("childInputOnCount", arrChk.length);
+	for(var i = 0; i < arrChk.length; i++) {
+		i1.data("childInputOn" + i, arrChk[i]);
+	}
+	i1.data("childInputOffCount", arrOff.length);
+	for(var i = 0; i < arrOff.length; i++) {
+		i1.data("childInputOff" + i, arrOff[i]);
+	}
+	i1.change(function(e) {
+		var doTogg = i1.get(0).checked;
+		for(var i = 0; i < i1.data("childInputOnCount"); i++) {
+			var iN = i1.data("childInputOn" + i);
+			if(doTogg)
+				iN.slideDown(100);
+			else
+				iN.slideUp(100);
+		}
+		for(var i = 0; i < i1.data("childInputOffCount"); i++) {
+			var iN = i1.data("childInputOff" + i);
+			if(!doTogg)
+				iN.slideDown(100);
+			else
+				iN.slideUp(100);
+		}
+	});
+}
 
 //% operator is signed remainder, not modulus -- works differently on negative numbers
 var Mod = function(n, p) {
