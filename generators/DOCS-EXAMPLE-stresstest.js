@@ -53,8 +53,9 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(fu
 	inst.Iter ++;
 	return inst.Iter == inst.MaxIter;
 }, { //The following are all optional parameters provided for the SBG_SlowIterator.
-	RunSpeed: 50, //Milliseconds between batches of calls to the above function. Defaults to 50.
-	MaxExecTime: 40, //How many milliseconds a batch of calls is allowed to last for. Any longer and the SBG will pause to let UI take a breath. True JS multithreading when :( Defaults to 40.
+	RunSpeed: 50, //Milliseconds between meta-batches of calls to the above function. Defaults to 50.
+	MaxExecTime: 40, //How many milliseconds a meta-batch of calls is allowed to last for. Any longer and the SBG will pause to let UI take a breath. True JS multithreading when :( Defaults to 40.
+	//Batching: positive nonzero int: number of times the function is called in one batch -- i.e. all at once, with only endstate-checking code performed by the SlowIterator. The actions taken after each batch (polling execution time to determine whether to end the meta-batch) can take a lot of time when compared to *extremely fast* iterated functions; set this to a higher number in those cases. Defaults to 1.
 	OnStagePause: function(inst) {
 		//This function is called after every batch of the main generator function (ROUGHLY every RunSpeed milliseconds). Defaults to an empty function.
 		//The return value, if not empty, will be used to update the status display for this instance (if it has one).

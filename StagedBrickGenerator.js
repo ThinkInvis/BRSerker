@@ -2,12 +2,14 @@ class SBG_SlowIterator {
 	constructor(gCbStep, {
 		RunSpeed = 50,
 		MaxExecTime = 40,
+		Batching = 1,
 		OnStageSetup = function() {},
 		OnStagePause = function() {},
 		OnStageFinalize = function() {}
 	} = {}) {
 		this.runSpeed = RunSpeed;
 		this.maxExecTime = MaxExecTime;
+		this.batching = Batching;
 		this.genSetupVars = OnStageSetup;
 		this.genStep = gCbStep;
 		this.genPause = OnStagePause;
@@ -43,39 +45,41 @@ class SBG_SlowIterator {
 					var masterEstopMsg;
 					if(typeof inst._stageIndex === "undefined") masterEstopMsg = "Emergency stop! ";
 					else masterEstopMsg = "Stage " + inst._stageIndex + " e-stop! ";
-					if(inst._brickCountCap > -1 && inst.brickBuffer.length > inst._brickCountCap) {
-						if(inst._statusEnabled)
-							new StatusTicket(inst._statusContainer, {
-								initText: masterEstopMsg + "Too many bricks.",
-								bgColor: "ff0000",
-								iconClass: "warntri",
-								timeout: 15000
-							});
-						self._genFinalize(inst, promise, "TooManyBricks");
-						return;
-					} else if(inst._extCancel) {
-						if(inst._statusEnabled)
-							new StatusTicket(inst._statusContainer, {
-								initText: masterEstopMsg + "Cancelled by external source.",
-								bgColor: "ff0000",
-								iconClass: "warntri",
-								timeout: 15000
-							});
-						self._genFinalize(inst, promise, "UserCancel");
-						return;
-					} else if(typeof inst.abort !== "undefined") {
-						if(inst._statusEnabled)
-							new StatusTicket(inst._statusContainer, {
-								initText: masterEstopMsg + "e-stop! Internal: " + inst.abort,
-								bgColor: "ff0000",
-								iconClass: "warntri",
-								timeout: 15000
-							});
-						self._genFinalize(inst, promise, "GenCancel");
-						return;
-					} else if(self.genStep(inst)) {
-						self._genFinalize(inst, promise);
-						return;
+					for(var i = 0; i < self.batching; i++) {
+						if(inst._brickCountCap > -1 && inst.brickBuffer.length > inst._brickCountCap) {
+							if(inst._statusEnabled)
+								new StatusTicket(inst._statusContainer, {
+									initText: masterEstopMsg + "Too many bricks.",
+									bgColor: "ff0000",
+									iconClass: "warntri",
+									timeout: 15000
+								});
+							self._genFinalize(inst, promise, "TooManyBricks");
+							return;
+						} else if(inst._extCancel) {
+							if(inst._statusEnabled)
+								new StatusTicket(inst._statusContainer, {
+									initText: masterEstopMsg + "Cancelled by external source.",
+									bgColor: "ff0000",
+									iconClass: "warntri",
+									timeout: 15000
+								});
+							self._genFinalize(inst, promise, "UserCancel");
+							return;
+						} else if(typeof inst.abort !== "undefined") {
+							if(inst._statusEnabled)
+								new StatusTicket(inst._statusContainer, {
+									initText: masterEstopMsg + "e-stop! Internal: " + inst.abort,
+									bgColor: "ff0000",
+									iconClass: "warntri",
+									timeout: 15000
+								});
+							self._genFinalize(inst, promise, "GenCancel");
+							return;
+						} else if(self.genStep(inst)) {
+							self._genFinalize(inst, promise);
+							return;
+						}
 					}
 					var t1 = window.performance.now();
 					tAccum += (t1 - t0);
