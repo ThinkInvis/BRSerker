@@ -1,0 +1,75 @@
+<meta charset="UTF-8">
+<html>
+	<head>
+		<link rel="stylesheet" type="text/css" href="../main.css">
+		<link rel="stylesheet" type="text/css" href="../inputs.css">
+		<link rel="stylesheet" type="text/css" href="../statusticket.css">
+		
+		<style>
+			.tsphelper {
+				background-color: #aaa;
+				background-image:
+					-moz-linear-gradient(45deg, #888 25%, transparent 25%),
+					-moz-linear-gradient(-45deg, #888 25%, transparent 25%),
+					-moz-linear-gradient(45deg, transparent 75%, #888 75%),
+					-moz-linear-gradient(-45deg, transparent 75%, #888 75%);
+					
+					background-size: 10px 10px;
+					background-position: 0 0, 5px 0, 5px -5px, 0 5px;
+			}
+		</style>
+		
+		<script src="../lib/jquery-3.4.1.min.js"></script>
+		<script src="../lib/three.min.js"></script>
+		<script src="../lib/three-OrbitNoModule.js"></script>
+		<script src="../lib/stats.min.js"></script>
+		<script src="../lib/colour.js"></script>
+		<script src="../lib/brs.js"></script>
+		<script src="../lib/perlin.js"></script>
+		<script>
+		window.TextEncoder = window.TextDecoder = null;
+		</script>
+		<script src="../lib/encoding-indexes.js"></script>
+		<script src="../lib/encoding.js"></script>
+		<script src="../util.js"></script>
+		<script src="../statusticket.js"></script>
+		<script src="../brickdata.js"></script>
+		<script src="../StagedBrickGenerator.js"></script>
+	</head>
+	<body>
+		<div id="main-container">
+			<div id="panel-controls">
+				<div id="controls-scripting" class="controls-subpanel">
+					<div class="controls-subpanel-title">Script Entry</div>
+					<textarea id="inp-gen" style="width:100%;" rows=20></textarea>
+					<button id="btn-run" class="opt-1-2">Run</button>
+					<button id="btn-cls" class="opt-1-2">Clear Output</button>
+				</div>
+				<div class="controls-footer">
+					<span style="font-weight:600">BRSerker DevTools:</span><br>
+					Iterator Previewer<br>
+					<a href="https://github.com/ThinkInvis/BRSerker">Source on GitHub</a>
+				</div>
+			</div>
+			<div class="tsphelper" style="right:0;left:300px;top:0;bottom:0;position:absolute;">
+				<canvas id="cvs-main" style="width:100%;height:100%;"></canvas>
+				<div id="status-container"></div>
+			</div>
+		</div>
+<script>
+var cvsjq = $("#cvs-main");
+var cvs = cvsjq.get(0);
+cvsjq.css({"width": cvsjq.width(), "height": cvsjq.height()});
+cvs.width = cvsjq.width();
+cvs.height = cvsjq.height();
+var ctx = cvs.getContext("2d");
+$("#btn-run").click(function() {
+	eval($('#inp-gen').val());
+});
+$("#btn-cls").click(function() {
+	ctx.clearRect(0,0,cvsjq.width(),cvsjq.height());
+});
+		
+</script>
+	</body>
+</html>
