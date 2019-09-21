@@ -114,13 +114,13 @@ class StagedBrickGenerator {
 	
 	applyControls(jqElem) {
 		for(var i in this.controls) {
-			if(!this.controls.hasOwnProperty(i)) continue;
+			if(!this.controls.hasOwnProperty(i) || (typeof i.prototype !== "undefined" && typeof i.prototype.jquery === "undefined")) continue;
 			jqElem.append(this.controls[i]);
 		}
 	}
 	removeControls(jqElem) {
 		for(var i in this.controls) {
-			if(!this.controls.hasOwnProperty(i)) continue;
+			if(!this.controls.hasOwnProperty(i) || (typeof i.prototype !== "undefined" && typeof i.prototype.jquery === "undefined")) continue;
 			this.controls[i].detach();
 		}
 	}
