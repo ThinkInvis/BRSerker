@@ -69,6 +69,18 @@ var ParentCheckboxInput = function(i1, arrChk, arrOff) {
 		}
 	});
 }
+var ParentClickInput = function(i1, arrChk) {
+	i1.data("childInputCount", arrChk.length);
+	for(var i = 0; i < arrChk.length; i++) {
+		i1.data("childInput" + i, arrChk[i]);
+	}
+	i1.click(function(e) {
+		for(var i = 0; i < i1.data("childInputCount"); i++) {
+			var iN = i1.data("childInput" + i);
+			iN.slideToggle(100);
+		}
+	});
+}
 
 //% operator is signed remainder, not modulus -- works differently on negative numbers
 var Mod = function(n, p) {
@@ -133,4 +145,9 @@ var ColorQuantize = function(color, colorset) {
 		SetI: bestIndex,
 		Color: bestColor
 	}
+}
+
+//based on threejs implementation of randInt
+var	fracToInt = function (low, high, src) {
+	return low + Math.floor(src * ( high - low + 1 ));
 }

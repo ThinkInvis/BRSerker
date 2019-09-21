@@ -1,4 +1,5 @@
 //Expects 'inst.vox' to be a 3D array whose values are each either an RGBA color array (full cell with that color) or the string "skip" (empty cell)
+//Expects 'inst.maxX', 'inst.maxY', 'inst.maxZ' to be set to the bounds of inst.vox (allows for some out-of-bounds data to be set in previous stages)
 //If 'inst.octreeIrregular' is set to 'true', splits can happen anywhere (can be more efficient than center); otherwise, splits only happen directly at the center of the leaf
 //If 'inst.octreeSizeLimit' is not undefined, expects it to be an array containing the inclusive maximum X, Y, and Z size for one brick. Otherwise, this limit is not used.
 //If 'inst.octreeScale' is not undefined, expects it to be an array containing the X, Y, and Z brick size of one voxel. Otherwise, this size is [1, 1, 3] (a 1x1 brick). Scales octreeSizeLimit such that octreeSizeLimit applies to the output bricks, not to voxel scale.
@@ -103,10 +104,6 @@ var SBGSI_OctreeVoxels = new SBG_SlowIterator(function(inst) {
 	RunSpeed: 50,
 	MaxExecTime: 40,
 	OnStageSetup: function(inst) {
-		inst.maxX = inst.vox.length;
-		inst.maxY = inst.vox[0].length;
-		inst.maxZ = inst.vox[0][0].length;
-		
 		inst.totalLeafTracker = 1;
 		
 		inst.usesOctreeSizeLimit = (typeof inst.octreeSizeLimit !== "undefined");
@@ -135,71 +132,239 @@ var SBGSI_OctreeVoxels = new SBG_SlowIterator(function(inst) {
 var GenName = "OcTerrain";
 
 Generators[GenName] = new StagedBrickGenerator(GenName, [
+///// STAGE 1: Heightmap Generation
 	new SBG_SlowIterator(function(inst) {
-		var currHeight = inst.pollHeightmap(inst.currX, inst.currY);
+		var iv = 0;
 		
-		var val, currCave;//, caveDifCheck;
-		var lowestNeighbor = currHeight;
-		
-		if(inst.doCaves) {
-			currCave = 0.5 * (1 + noise.simplex3(
-				inst.currX/inst.vNoiseResolution,
-				inst.currY/inst.vNoiseResolution,
-				inst.currZ/inst.vNoiseResolution
-			));
-			
-			/*if(inst.skinDepth != 0) {
-				var caveDifs = [];
-				for(var i = -1; i <= 1; i++) {
-					for(var j = -1; j <= 1; j++) {
-						for(var k = -1; k <= 1; k++) {
-							
-						}
-					}
-				}
-			}*/ //NYI, need to work out the algorithm
+		var freq = 1;
+		var amp = 1;
+		var ampt = 0;
+		for(var k = 0; k < inst.hNoiseOctaves; k++) {
+			ampt += amp;
+			iv += amp * noise.simplex2(
+				inst.currX/inst.hNoiseResolution * freq,
+				inst.currY/inst.hNoiseResolution * freq
+			);
+			freq *= 2;
+			amp *= inst.hNoisePersistence;
 		}
+		iv /= ampt / inst.hNoiseScale; //take average of all samples, then multiply by intended scale
+		iv += inst.hNoiseOffset;
+		
+		inst.heightmap[inst.currX][inst.currY] = iv;
+		
+		inst.currX++;
+		if(inst.currX >= inst.maxX) {
+			inst.currX = 0;
+			inst.currY ++;
+		}
+		return inst.currY >= inst.maxY;
+	},{
+		RunSpeed: 50,
+		MaxExecTime: 40,
+		OnStageSetup: function(inst) {
+			inst.currX = 0;
+			inst.currY = 0;
+			inst.heightmap = [];
+			for(var i = 0; i < inst.maxX; i++) {
+				inst.heightmap[i] = [];
+			}
+		},
+		OnStagePause: function(inst) {
+			return "Generating heightmap... " + Math.floor(inst.currY/inst.maxY*100) + "%";
+		}
+	}),
+///// STAGE 1b: Cavemap Generation
+	new SBG_SlowIterator(function(inst) {
+		if(!inst.doCaves) return true;
+		
+		var i = inst.currX;
+		var j = inst.currY;
+		var k = inst.currZ;
+		
+		inst.cavemap[inst.currX][inst.currY][inst.currZ] = 0.5 * (1 + noise.simplex3(
+			inst.currX/inst.vNoiseResolution,
+			inst.currY/inst.vNoiseResolution,
+			inst.currZ/inst.vNoiseResolution
+		));
+		
+		inst.currZ++;
+		if(inst.currZ >= inst.maxZ) {
+			inst.currZ=0;
+			inst.currY++;
+			inst.cavemap[inst.currX][inst.currY] = [];
+		}
+		if(inst.currY >= inst.maxY) {
+			inst.currY=0;
+			inst.currX++;
+			inst.cavemap[inst.currX] = [[]];
+		}
+		return inst.currX >= inst.maxX;
+	},{
+		RunSpeed: 50,
+		MaxExecTime: 40,
+		OnStageSetup: function(inst) {
+			if(!inst.doCaves) return;
+			inst.cavemap = [[[]]];
+			inst.currX = 0;
+			inst.currY = 0;
+			inst.currZ = 0;
+		},
+		OnStagePause: function(inst) {
+			return "Generating cavemap... " + Math.floor(inst.currX/inst.maxX*100) + "%";
+		}
+	}),
+///// STAGE 2: Heightmap Smoothing - NYI, maybe not necessary
+///// STAGE 3a: Falloff map generation
+	new SBG_SlowIterator(function(inst) {
+		if(!inst.doFalloff) return true;
+		//rolling particle mask
+		//http://www.nolithius.com/articles/world-generation/world-generation-breakdown
+		
+		for(var i = 0; i < inst.maxP; i++) {
+			inst.pmap[inst.currX][inst.currY] ++;
+			if(inst.pmap[inst.currX][inst.currY] > inst.highestPmap)
+				inst.highestPmap = inst.pmap[inst.currX][inst.currY];
+			var oval = inst.pmap[inst.currX][inst.currY];
+			
+			var stepX = fracToInt(-1, 1, inst.prng());
+			var stepY = fracToInt(-1, 1, inst.prng());
+			var nx = inst.currX + stepX;
+			var ny = inst.currY + stepY;
+			
+			if(nx >= inst.maxX || ny >= inst.maxY || nx < 0 || ny < 0) {
+				
+			} else {
+				var nval = inst.pmap[nx][ny];
+				if(nval <= oval) {
+					inst.currX = nx;
+					inst.currY = ny;
+				}
+			}
+		}
+		
+		inst.currX = fracToInt(inst.minEdgeDist, inst.maxX-inst.minEdgeDist-1, inst.prng());
+		inst.currY = fracToInt(inst.minEdgeDist, inst.maxY-inst.minEdgeDist-1, inst.prng());
+		inst.currI++;
+		
+		return inst.currI >= inst.maxI;
+	},{
+		RunSpeed: 50,
+		MaxExecTime: 40,
+		Batching: 256,
+		OnStageSetup: function(inst) {
+			if(!inst.doFalloff) return;
+			inst.currI = 0;
+			inst.maxI = inst.maxX*inst.maxY*inst.falloffCount;
+			inst.maxP = inst.falloffLife;
+			inst.minEdgeDist = inst.falloffEdge;
+			inst.currX = fracToInt(inst.minEdgeDist, inst.maxX-inst.minEdgeDist-1, inst.prng());
+			inst.currY = fracToInt(inst.minEdgeDist, inst.maxY-inst.minEdgeDist-1, inst.prng());
+			inst.pmap = [];
+			for(var i = 0; i < inst.maxX; i++) {
+				inst.pmap[i] = [];
+				for(var j = 0; j < inst.maxY; j++) {
+					inst.pmap[i][j] = 0;
+				}
+			}
+			inst.highestPmap = 0;
+		},
+		OnStagePause: function(inst) {
+			return "Generating falloff map... " + Math.floor(inst.currI/inst.maxI*100) + "%";
+		},
+		OnStageFinalize: function(inst) {
+			if(!inst.doFalloff) return;
+			for(var i = 0; i < inst.maxX; i++) {
+				for(var j = 0; j < inst.maxY; j++) {
+					//edge blurring. TODO: add option
+					var idist = Math.min(i, inst.maxX-1-i);
+					var jdist = Math.min(j, inst.maxY-1-j);
+					if(idist == 0 || jdist == 0) inst.pmap[i][j] = 0;
+					else if(idist == 1 || jdist == 1) inst.pmap[i][j] *= 0.5;
+					else if(idist == 2 || jdist == 2) inst.pmap[i][j] *= 0.75;
+					else if(idist == 3 || jdist == 3) inst.pmap[i][j] *= 0.825;
+					//normalization
+					inst.pmap[i][j] /= inst.highestPmap;
+				}
+			}
+		}
+	}),
+///// STAGE 3b: Apply Falloff
+	new SBG_SlowIterator(function(inst) {
+		if(!inst.doFalloff) return true;
+		inst.heightmap[inst.currX][inst.currY] *= inst.pmap[inst.currX][inst.currY];
+		//inst.heightmap[inst.currX][inst.currY] = falloffMul * inst.maxZ;
+		
+		inst.currY++;
+		if(inst.currY >= inst.maxY) {
+			inst.currX++;
+			inst.currY = 0;
+		}
+		return inst.currX >= inst.maxX;
+	},{
+		RunSpeed: 50,
+		MaxExecTime: 40,
+		OnStageSetup: function(inst) {
+			if(!inst.doFalloff) return;
+			inst.currX = 0;
+			inst.currY = 0;
+		},
+		OnStagePause: function(inst) {
+			return "Applying falloff... " + Math.floor(inst.currX/inst.maxX*100) + "%";
+		}
+	}),
+///// STAGE 4: Heightmap Voxel Mapping
+	new SBG_SlowIterator(function(inst) {
+		var currHeight = Math.min(Math.floor(inst.heightmap[inst.currX][inst.currY]), inst.maxZ);
+		
+		var lowestNeighbor = currHeight;
 		
 		if(inst.skinDepth != 0) {
 			for(var i = -1; i <= 1; i++) {
 				for(var j = -1; j <= 1; j++) {
 					if(i == 0 && j == 0) continue;
-					var nbHeight = inst.pollHeightmap(inst.currX+i, inst.currY+j);
+					var nbHeight = Math.floor(inst.heightmap[inst.currX+i][inst.currY+j]);
 					if(nbHeight < lowestNeighbor) lowestNeighbor = nbHeight;
 				}
 			}
 		}
 		
-		if(!inst.doCaves || currCave < inst.vNoiseChance) { //Caves: remove blocks based on a threshold
-			if(inst.currZ < currHeight && //Check upper terrain height
-				(inst.skinDepth == 0 || lowestNeighbor - inst.currZ < inst.skinDepth)) { //Check lower terrain height (if using skin depth) relative to the lowest neighboring cell (to avoid holes)
-				val = inst.grassColor;
-				if(inst.grassDepth == 0 || inst.currZ < currHeight - inst.grassDepth)
-					val = inst.mainColor;
-			} else
-				val = "skip";
-		} else
-			val = "skip";
-		
-		if(val != "skip") inst.bcMinTracker++; //for stats
-		
-		inst.vox[inst.currX][inst.currY][inst.currZ] = val;
+		//in non-cave generation we can go really fast along the z axis so don't bother slowiterating it
+		if(inst.skinDepth > 0) {
+			for(var k = 0; k < lowestNeighbor-inst.skinDepth; k++) {
+				inst.vox[inst.currX][inst.currY][k] = "skip";
+			}
+			for(var k = lowestNeighbor-inst.skinDepth; k < currHeight; k++) {
+				inst.vox[inst.currX][inst.currY][k] = inst.mainColor;
+			}
+		} else {
+			for(var k = 0; k < currHeight; k++) {
+				inst.vox[inst.currX][inst.currY][k] = inst.mainColor;
+			}
+		}
+		if(currHeight >= inst.grassCutoff) {
+			for(var k = currHeight; k < Math.min(currHeight+inst.grassDepth, inst.maxZ); k++) {
+				inst.vox[inst.currX][inst.currY][k] = inst.grassColor;
+			}
+			for(var k = currHeight+inst.grassDepth; k < inst.maxZ; k++) {
+				inst.vox[inst.currX][inst.currY][k] = "skip";
+			}
+		} else {
+			for(var k = currHeight; k < inst.maxZ; k++) {
+				inst.vox[inst.currX][inst.currY][k] = "skip";
+			}
+		}
 		
 		inst.currX++;
 		if(inst.currX >= inst.maxX) {
 			inst.currX = 0;
 			inst.currY++;
 		}
-		if(inst.currY >= inst.maxY) {
-			inst.currY = 0;
-			inst.currZ++;
-		}
-		return inst.currZ >= inst.maxZ;
+		return inst.currY >= inst.maxY;
 	},{
 		RunSpeed: 50,
 		MaxExecTime: 40,
 		OnStageSetup: function(inst) {
-			noise.seed(Math.random());
 			inst.vox = [];
 			for(var i = 0; i < inst.maxX; i++) {
 				inst.vox[i] = [];
@@ -210,127 +375,171 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 			inst.currX = 0;
 			inst.currY = 0;
 			inst.currZ = 0;
-			inst.bcMinTracker = 0;
-			inst.debugNoise = [];
-			inst.minStart = window.performance.now();
-			inst.heightmap = [];
-			inst.pollHeightmap = function(i,j) {
-				if(typeof inst.heightmap[i] === "undefined")
-					inst.heightmap[i] = [];
-				if(typeof inst.heightmap[i][j] === "undefined") {
-					inst.heightmap[i][j] = 0;
-					var freq = 1;
-					var amp = 1;
-					var ampt = 0;
-					for(var k = 0; k < inst.hNoiseOctaves; k++) {
-						ampt += amp;
-						inst.heightmap[i][j] += amp * noise.simplex2(
-							i/inst.hNoiseResolution * freq,
-							j/inst.hNoiseResolution * freq
-						);
-						freq *= 2;
-						amp *= inst.hNoisePersistence;
-					}
-					inst.heightmap[i][j] /= ampt / inst.hNoiseScale; //take average of all samples, then multiply by intended scale
-					inst.heightmap[i][j] += inst.hNoiseOffset;
-				}
-				return inst.heightmap[i][j];
-			}
 		},
 		OnStagePause: function(inst) {
-			return "Generating noise... " + Math.floor(inst.currZ/inst.maxZ*100) + "%";
-		},
-		OnStageFinalize: function(inst) {
-			inst.minEnd = window.performance.now();
+			return "Voxelizing... " + Math.floor(inst.currY/inst.maxY*100) + "%";
 		}
 	}),
+///// STAGE 5: Cave Voxel Mapping/Carving -- NYI
+///// STAGE 6: Octree Minimization
 	SBGSI_OctreeVoxels], {
-	Controls: {
-		NScaleLabel: $("<span>", {"class":"opt-1-2","html":"Height scale:"}),
-		NScale: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0.01, "max":1024, "value":512, "step":0.01}),
-		NOffsetLabel: $("<span>", {"class":"opt-1-2","html":"Height offset:"}),
-		NOffset: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":-2048, "max":2048, "value":512, "step":0.01}),
-		NResolutionLabel: $("<span>", {"class":"opt-1-2","html":"Height base scale: <span class='hint'>(10<sup>-n</sup>)</span>"}),
-		NResolution: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":-4, "max":4, "value":2.6, "step":0.01}),
-		NOctavesLabel: $("<span>", {"class":"opt-1-2","html":"Octaves:"}),
-		NOctaves: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":1, "max":10, "value":3, "step":1}),
-		NPersistenceLabel: $("<span>", {"class":"opt-1-2","html":"Persistence:"}),
-		NPersistence: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":1, "value":0.8, "step":0.001}),
-		NGrassDepthLabel: $("<span>", {"class":"opt-1-2","html":"Grass depth:<span class='hint'>0 for no grass</span>"}),
-		NGrassDepth: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":256, "value":3, "step":0.1}),
-		NMaxDepthLabel: $("<span>", {"class":"opt-1-2","html":"Skin depth:<span class='hint'>0 for infinite</span>"}),
-		NMaxDepth: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":256, "value":0, "step":0.1}),
-		NDoCavesLabel: $("<span>", {"class":"opt-1-2","html":"Add caves: <span class='hint'>iffy, be careful</span>"}),
-		NDoCaves: $("<span>", {"class":"opt-1-2 cb-container opt-input", "html":"&nbsp;"}).append($("<input>", {"type":"checkbox","checked":false})),
-		NCaveResolutionLabel: $("<span>", {"class":"opt-1-2","html":"Cave base scale: <span class='hint'>(10<sup>-n</sup>)</span>", "style":"display:none"}),
-		NCaveResolution: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":-4, "max":4, "value":1, "step":0.01, "style":"display:none"}),
-		NCavePercentLabel: $("<span>", {"class":"opt-1-2","html":"Cave ratio: <span class='hint'>(1 = no caves)</span>", "style":"display:none"}),
-		NCavePercent: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":1, "value":0.75, "step":0.01, "style":"display:none"}),
-		ModeLabel: $("<span>", {"class":"opt-1-2","text":"Irregular splits:"}),
-		Mode: $("<span>", {"class":"opt-1-2 cb-container opt-input", "html":"&nbsp;"}).append($("<input>", {"type":"checkbox","checked":true})),
-		SizeLabel: $("<span>", {"class":"opt-1-4","text":"Gen area:"}),
-		SizeX: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "min":1, "max":1024, "value":128, "step":1}),
-		SizeY: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "min":1, "max":1024, "value":128, "step":1}),
-		SizeZ: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "min":1, "max":3072, "value":1024, "step":1}),
-		SecBBricksLabel: $("<span>", {"class":"opt-1-1","html":"Brick properties:"}),
-		BScaleLabel: $("<span>", {"class":"opt-1-4","html":"Scale: <span class='hint'>Z in f's</span>"}),
-		BScaleX: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "min":1, "max":16, "value":8, "step":1}),
-		BScaleY: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "min":1, "max":16, "value":8, "step":1}),
-		BScaleZ: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "min":1, "max":48, "value":1, "step":1}),
-		BLimLabel: $("<span>", {"class":"opt-1-4","html":"Limit: <span class='hint'>Z in f's</span>"}),
-		BLimX: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "min":1, "max":204, "value":128, "step":1}),
-		BLimY: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "min":1, "max":204, "value":128, "step":1}),
-		BLimZ: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "min":1, "max":511, "value":128, "step":1}),
-		ColorLabel: $("<span>", {"class":"opt-1-4","text":"Dirt color:"}),
-		ColorR: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "min":0, "max":1, "value":0.4, "step":0.001}),
-		ColorG: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "min":0, "max":1, "value":0.3, "step":0.001}),
-		ColorB: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "min":0, "max":1, "value":0.2, "step":0.001}),
-		GColorLabel: $("<span>", {"class":"opt-1-4","text":"Grass color:"}),
-		GColorR: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "min":0, "max":1, "value":0.1, "step":0.001}),
-		GColorG: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "min":0, "max":1, "value":0.7, "step":0.001}),
-		GColorB: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "min":0, "max":1, "value":0.2, "step":0.001})
-	},
+	Controls: (function() {
+		var cObj = {};
+		cObj.NoiseOpts = {
+			SizeLabel: $("<span>", {"class":"opt-1-4","text":"Gen area:"}),
+			SizeX: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "min":1, "max":1024, "value":64, "step":1}),
+			SizeY: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "min":1, "max":1024, "value":64, "step":1}),
+			SizeZ: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "min":1, "max":3072, "value":256, "step":1}),
+			SeedLabel: $("<span>", {"class":"opt-1-2","html":"Noise seed:"}),
+			Seed: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "value":0}),
+			ScaleLabel: $("<span>", {"class":"opt-1-2","html":"Height scale:"}),
+			Scale: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0.01, "max":1024, "value":128, "step":0.01}),
+			OffsetLabel: $("<span>", {"class":"opt-1-2","html":"Height offset:"}),
+			Offset: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":-2048, "max":2048, "value":128, "step":0.01}),
+			ResolutionLabel: $("<span>", {"class":"opt-1-2","html":"Height base scale: <span class='hint'>(10<sup>-n</sup>)</span>"}),
+			Resolution: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":-4, "max":4, "value":2.2, "step":0.01}),
+			OctavesLabel: $("<span>", {"class":"opt-1-2","html":"Octaves:"}),
+			Octaves: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":1, "max":10, "value":3, "step":1}),
+			PersistenceLabel: $("<span>", {"class":"opt-1-2","html":"Persistence:"}),
+			Persistence: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":1, "value":0.8, "step":0.001})
+		};
+		cObj.NoiseMaster = $("<button>", {"class":"opt-1-1","text":"Show/Hide: Noise Options"});
+		cObj.NoiseContainer = $("<div>", {"class":"controls-subsubpanel","style":"display:none;"});
+		for(var i in cObj.NoiseOpts) {
+			if(!cObj.NoiseOpts.hasOwnProperty(i)) continue;
+			cObj.NoiseContainer.append(cObj.NoiseOpts[i]);
+		}
+		ParentClickInput(cObj.NoiseMaster, [cObj.NoiseContainer]);
+		
+		cObj.LayerOpts = {
+			GrassDepthLabel: $("<span>", {"class":"opt-1-2","html":"Grass depth:<span class='hint'>0 for no grass</span>"}),
+			GrassDepth: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":256, "value":3, "step":0.1}),
+			GrassCutoffLabel: $("<span>", {"class":"opt-1-2","html":"Grass cutoff below:"}),
+			GrassCutoff: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":256, "value":6, "step":0.1}),
+			MaxDepthLabel: $("<span>", {"class":"opt-1-2","html":"Skin depth:<span class='hint'>0 for infinite</span>"}),
+			MaxDepth: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":256, "value":0, "step":0.1})
+		};
+		cObj.LayerMaster = $("<button>", {"class":"opt-1-1","text":"Show/Hide: Layering Options"});
+		cObj.LayerContainer = $("<div>", {"class":"controls-subsubpanel","style":"display:none;"});
+		for(var i in cObj.LayerOpts) {
+			if(!cObj.LayerOpts.hasOwnProperty(i)) continue;
+			cObj.LayerContainer.append(cObj.LayerOpts[i]);
+		}
+		ParentClickInput(cObj.LayerMaster, [cObj.LayerContainer]);
+		
+		cObj.FalloffOpts = {
+			DoFalloffLabel: $("<span>", {"class":"opt-1-2","html":"Add falloff:"}),
+			DoFalloff: $("<span>", {"class":"opt-1-2 cb-container opt-input", "html":"&nbsp;"}).append($("<input>", {"type":"checkbox","checked":false})),
+			PLifeLabel: $("<span>", {"class":"opt-1-2","html":"Particle lifetime:"}),
+			PLife: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":2, "max":1000, "value":50, "step":1}),
+			PCountLabel: $("<span>", {"class":"opt-1-2","html":"Particle density:<span class='hint'> per-pixel</span>"}),
+			PCount: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":1, "max":100, "value":3, "step":1}),
+			EdgeLabel: $("<span>", {"class":"opt-1-2","html":"Padding radius:</span>"}),
+			Edge: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":256, "value":32, "step":1})
+		};
+		cObj.FalloffMaster = $("<button>", {"class":"opt-1-1","text":"Show/Hide: Island Falloff Options"});
+		cObj.FalloffContainer = $("<div>", {"class":"controls-subsubpanel","style":"display:none;"});
+		for(var i in cObj.FalloffOpts) {
+			if(!cObj.FalloffOpts.hasOwnProperty(i)) continue;
+			cObj.FalloffContainer.append(cObj.FalloffOpts[i]);
+		}
+		ParentClickInput(cObj.FalloffMaster, [cObj.FalloffContainer]);
+		
+		cObj.CavesOpts = {
+			DoCavesLabel: $("<span>", {"class":"opt-1-2","html":"Add caves: <span class='hint'>iffy, be careful</span>"}),
+			DoCaves: $("<span>", {"class":"opt-1-2 cb-container opt-input", "html":"&nbsp;"}).append($("<input>", {"type":"checkbox","checked":false})),
+			CaveResolutionLabel: $("<span>", {"class":"opt-1-2","html":"Cave base scale: <span class='hint'>(10<sup>-n</sup>)</span>"}),
+			CaveResolution: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":-4, "max":4, "value":1, "step":0.01}),
+			CavePercentLabel: $("<span>", {"class":"opt-1-2","html":"Cave ratio: <span class='hint'>(1 = no caves)</span>"}),
+			CavePercent: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":1, "value":0.75, "step":0.01})
+		};
+		cObj.CavesMaster = $("<button>", {"class":"opt-1-1","text":"Show/Hide: Cave Options"});
+		cObj.CavesContainer = $("<div>", {"class":"controls-subsubpanel","style":"display:none;"});
+		for(var i in cObj.CavesOpts) {
+			if(!cObj.CavesOpts.hasOwnProperty(i)) continue;
+			cObj.CavesContainer.append(cObj.CavesOpts[i]);
+		}
+		ParentClickInput(cObj.CavesMaster, [cObj.CavesContainer]);
+		
+		cObj.VoxelOpts = {
+			ModeLabel: $("<span>", {"class":"opt-1-2","text":"Irregular splits:"}),
+			Mode: $("<span>", {"class":"opt-1-2 cb-container opt-input", "html":"&nbsp;"}).append($("<input>", {"type":"checkbox","checked":true}))
+		};
+		cObj.VoxelMaster = $("<button>", {"class":"opt-1-1","text":"Show/Hide: Voxelization Options"});
+		cObj.VoxelContainer = $("<div>", {"class":"controls-subsubpanel","style":"display:none;"});
+		for(var i in cObj.VoxelOpts) {
+			if(!cObj.VoxelOpts.hasOwnProperty(i)) continue;
+			cObj.VoxelContainer.append(cObj.VoxelOpts[i]);
+		}
+		ParentClickInput(cObj.VoxelMaster, [cObj.VoxelContainer]);
+		
+		cObj.BrickOpts = {
+			ScaleLabel: $("<span>", {"class":"opt-1-4","html":"Scale: <span class='hint'>Z in f's</span>"}),
+			ScaleX: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "min":1, "max":16, "value":4, "step":1}),
+			ScaleY: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "min":1, "max":16, "value":4, "step":1}),
+			ScaleZ: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "min":1, "max":48, "value":1, "step":1}),
+			LimLabel: $("<span>", {"class":"opt-1-4","html":"Limit: <span class='hint'>Z in f's</span>"}),
+			LimX: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "min":1, "max":204, "value":128, "step":1}),
+			LimY: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "min":1, "max":204, "value":128, "step":1}),
+			LimZ: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "min":1, "max":511, "value":128, "step":1}),
+			ColorLabel: $("<span>", {"class":"opt-1-4","text":"Dirt color:"}),
+			ColorR: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "min":0, "max":1, "value":0.4, "step":0.001}),
+			ColorG: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "min":0, "max":1, "value":0.3, "step":0.001}),
+			ColorB: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "min":0, "max":1, "value":0.2, "step":0.001}),
+			GColorLabel: $("<span>", {"class":"opt-1-4","text":"Grass color:"}),
+			GColorR: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "min":0, "max":1, "value":0.1, "step":0.001}),
+			GColorG: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "min":0, "max":1, "value":0.7, "step":0.001}),
+			GColorB: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "min":0, "max":1, "value":0.2, "step":0.001})
+		};
+		cObj.BrickMaster = $("<button>", {"class":"opt-1-1","text":"Show/Hide: Brick Options"});
+		cObj.BrickContainer = $("<div>", {"class":"controls-subsubpanel","style":"display:none;"});
+		for(var i in cObj.BrickOpts) {
+			if(!cObj.BrickOpts.hasOwnProperty(i)) continue;
+			cObj.BrickContainer.append(cObj.BrickOpts[i]);
+		}
+		ParentClickInput(cObj.BrickMaster, [cObj.BrickContainer]);
+		
+		return cObj;
+	})(),
 	OnSetup: function(inst) {
-		inst.maxX = this.controls.SizeX.val()*1;
-		inst.maxY = this.controls.SizeY.val()*1;
-		inst.maxZ = this.controls.SizeZ.val()*1;
+		inst.maxX = this.controls.NoiseOpts.SizeX.val()*1;
+		inst.maxY = this.controls.NoiseOpts.SizeY.val()*1;
+		inst.maxZ = this.controls.NoiseOpts.SizeZ.val()*1;
 		
-		inst.mainColor = [this.controls.ColorR.val()*1, this.controls.ColorG.val()*1, this.controls.ColorB.val()*1, 1.0];
-		inst.grassColor = [this.controls.GColorR.val()*1, this.controls.GColorG.val()*1, this.controls.GColorB.val()*1, 1.0];
-		inst.grassDepth = this.controls.NGrassDepth.val()*1;
-		inst.skinDepth = this.controls.NMaxDepth.val()*1;
+		inst.mainColor = [this.controls.BrickOpts.ColorR.val()*1, this.controls.BrickOpts.ColorG.val()*1, this.controls.BrickOpts.ColorB.val()*1, 1.0];
+		inst.grassColor = [this.controls.BrickOpts.GColorR.val()*1, this.controls.BrickOpts.GColorG.val()*1, this.controls.BrickOpts.GColorB.val()*1, 1.0];
+		inst.grassDepth = this.controls.LayerOpts.GrassDepth.val()*1;
+		inst.skinDepth = this.controls.LayerOpts.MaxDepth.val()*1;
 		
-		inst.hNoiseOctaves = this.controls.NOctaves.val()*1;
-		inst.hNoisePersistence = this.controls.NPersistence.val()*1;
-		inst.hNoiseScale = this.controls.NScale.val()*1;
-		inst.hNoiseOffset = this.controls.NOffset.val()*1;
-		inst.hNoiseResolution = Math.pow(10, this.controls.NResolution.val()*1);
-		inst.vNoiseResolution = Math.pow(10, this.controls.NCaveResolution.val()*1);
-		inst.vNoiseChance = this.controls.NCavePercent.val()*1;
+		inst.hNoiseOctaves = this.controls.NoiseOpts.Octaves.val()*1;
+		inst.hNoisePersistence = this.controls.NoiseOpts.Persistence.val()*1;
+		inst.hNoiseScale = this.controls.NoiseOpts.Scale.val()*1;
+		inst.hNoiseOffset = this.controls.NoiseOpts.Offset.val()*1;
+		inst.hNoiseResolution = Math.pow(10, this.controls.NoiseOpts.Resolution.val()*1);
+		inst.vNoiseResolution = Math.pow(10, this.controls.CavesOpts.CaveResolution.val()*1);
+		inst.vNoiseChance = this.controls.CavesOpts.CavePercent.val()*1;
 		
-		inst.doCaves = this.controls.NDoCaves.find('input').get(0).checked;
+		inst.grassCutoff = this.controls.LayerOpts.GrassCutoff.val()*1;
 		
-		inst.octreeScale = [this.controls.BScaleX.val()*1,this.controls.BScaleY.val()*1,this.controls.BScaleZ.val()*1];
-		inst.octreeSizeLimit = [this.controls.BLimX.val()*1,this.controls.BLimY.val()*1,this.controls.BLimZ.val()*1];
+		inst.doCaves = this.controls.CavesOpts.DoCaves.find('input').get(0).checked;
+		
+		inst.octreeScale = [this.controls.BrickOpts.ScaleX.val()*1,this.controls.BrickOpts.ScaleY.val()*1,this.controls.BrickOpts.ScaleZ.val()*1];
+		inst.octreeSizeLimit = [this.controls.BrickOpts.LimX.val()*1,this.controls.BrickOpts.LimY.val()*1,this.controls.BrickOpts.LimZ.val()*1];
 		//todo: hard clamp this to maximum? bad values are allowed for most inputs just to see what happens, but loading bricks higher than a certain size crashes brickadia
 		//max octreeSizeLimit = [204, 204, 511];
-		inst.octreeIrregular = this.controls.Mode.find('input').get(0).checked;
+		inst.octreeIrregular = this.controls.VoxelOpts.Mode.find('input').get(0).checked;
+		
+		inst.doFalloff = this.controls.FalloffOpts.DoFalloff.find('input').get(0).checked;
+		inst.falloffLife = this.controls.FalloffOpts.PLife.val()*1;
+		inst.falloffCount = this.controls.FalloffOpts.PCount.val()*1;
+		inst.falloffEdge = this.controls.FalloffOpts.Edge.val()*1;
+		
+		noise.seed(this.controls.NoiseOpts.Seed.val()*1);
+		inst.prng = new Math.seedrandom(this.controls.NoiseOpts.Seed.val()*1);
 	},
-	Description: "Generates grassed terrain based on simplex noise, with reduced brickcount through the magic of octrees.",
-	OnFinalize: function(inst) {
-		var now = window.performance.now();
-		if(inst._statusEnabled)
-			new StatusTicket(inst._statusContainer, {
-				initText: "Finished terrain! Mouseover for stats: Noise generation took " + ((inst.minEnd - inst.minStart)/1000).toFixed(2) + " seconds. Minimization took " + ((now - inst.voxStart)/1000).toFixed(2) + " seconds. Original voxel terrain had " + inst.bcMinTracker + " filled voxels. Octree minimization reduced potential brickcount by " + (100-inst.brickBuffer.length/inst.bcMinTracker*100).toFixed(3) + "%!",
-				bgColor: "00ff00",
-				iconClass: "",
-				timeout: 30000
-			});
-	}
+	Description: "Generates grassed terrain based on simplex noise, with reduced brickcount through the magic of octrees."
 });
 var o = new Option(GenName, GenName);
 $(o).html(GenName);
 $("#generator-type").append(o);
 Generators[GenName].OptionElement = o;
-
-ParentCheckboxInput(Generators[GenName].controls.NDoCaves.find("input"), [Generators[GenName].controls.NCaveResolutionLabel,Generators[GenName].controls.NCaveResolution, Generators[GenName].controls.NCavePercentLabel, Generators[GenName].controls.NCavePercent], []);
