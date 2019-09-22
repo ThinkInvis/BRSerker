@@ -280,7 +280,7 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 		
 		var lowestNeighbor = currHeight;
 		
-		if(inst.skinDepth != 0) {
+		if(inst.skinDepth >= 0) {
 			mapLocalIter2(function(val,x,y,isCenter){
 				if(isCenter) return;
 				var nbHeight = Math.floor(val);
@@ -289,7 +289,7 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 		}
 		
 		//in non-cave generation we can go really fast along the z axis so don't bother slowiterating it
-		if(inst.skinDepth > 0) {
+		if(inst.skinDepth >= 0) {
 			for(var k = 0; k < lowestNeighbor-inst.skinDepth; k++) {
 				inst.vox[inst.currX][inst.currY][k] = "skip";
 			}
@@ -403,7 +403,7 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 		for(var k = 0; k < cap; k++) {
 			if(inst.cavemap[inst.currX][inst.currY][k] < inst.vNoiseChance)
 				inst.vox[inst.currX][inst.currY][k] = "skip";
-			else if(inst.skinDepth > 0 && k < currHeight - inst.skinDepth) { //skin depth is on, generate shell around caves
+			else if(inst.skinDepth >= 0 && k < currHeight - inst.skinDepth) { //skin depth is on, generate shell around caves
 				var foundNeighbor = false;
 				mapLocalIter3(function(val,x,y,z){
 					if(val < inst.vNoiseChance) foundNeighbor = true;
@@ -486,12 +486,12 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 		ParentClickInput(cObj.NoiseMaster, [cObj.NoiseContainer]);
 		
 		cObj.LayerOpts = {
-			GrassDepthLabel: $("<span>", {"class":"opt-1-2","html":"Grass depth:<span class='hint'>0 for no grass</span>"}),
+			GrassDepthLabel: $("<span>", {"class":"opt-1-2","html":"Grass depth:<span class='hint'> 0 = no grass</span>"}),
 			GrassDepth: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":256, "value":3, "step":0.1}),
 			GrassCutoffLabel: $("<span>", {"class":"opt-1-2","html":"Grass cutoff below:"}),
 			GrassCutoff: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":256, "value":6, "step":0.1}),
-			MaxDepthLabel: $("<span>", {"class":"opt-1-2","html":"Skin depth:<span class='hint'>0 for infinite</span>"}),
-			MaxDepth: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":256, "value":0, "step":0.1})
+			MaxDepthLabel: $("<span>", {"class":"opt-1-2","html":"Skin depth:<span class='hint'> -1 = infinite</span>"}),
+			MaxDepth: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":-1, "max":256, "value":-1, "step":0.1})
 		};
 		cObj.LayerMaster = $("<button>", {"class":"opt-1-1","text":"Show/Hide: Layering Options"});
 		cObj.LayerContainer = $("<div>", {"class":"controls-subsubpanel","style":"display:none;"});
@@ -536,7 +536,7 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 			CaveBTRadius: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":64, "value":8, "step":1}),
 			CaveBTStrengthLabel: $("<span>", {"class":"opt-1-2","html":"Floor tens. strength:"}),
 			CaveBTStrength: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":1, "value":0.4, "step":0.01}),
-			CavePatchDepthLabel: $("<span>", {"class":"opt-1-2","html":"Surf. patch:<span class='hint'> -1 to disable</span>"}),
+			CavePatchDepthLabel: $("<span>", {"class":"opt-1-2","html":"Surf. patch:<span class='hint'> -1 = none</span>"}),
 			CavePatchDepth: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":-1, "max":16, "value":1, "step":1})
 		};
 		cObj.CavesMaster = $("<button>", {"class":"opt-1-1","text":"Show/Hide: Cave Options"});
