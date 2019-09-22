@@ -1,6 +1,8 @@
 var GenName = "BlsReader";
+var GenDisplayName = "BLS";
+var GenCategory = "File Readers";
 
-Generators[GenName] = new StagedBrickGenerator(GenName, [{apply: function(inst, promise) {
+var NewGen = new StagedBrickGenerator(GenName, [{apply: function(inst, promise) {
 	var reader = new FileReader();
 	reader.onload = function(e) {
 		var lines = this.result.split("\r\n"); //TODO: is there an easy iterated version of this? can cause a short program freeze when passed huge files (see bl default saves The Bedroom, Golden Gate Bridge)
@@ -118,7 +120,5 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [{apply: function(inst, 
 	},
 	Description: "Loads bricks and related data from a Blockland save file (.BLS)."
 });
-var o = new Option(GenName, GenName);
-$(o).html(GenName);
-$("#generator-type").append(o);
-Generators[GenName].OptionElement = o;
+
+RegisterGenerator(NewGen, GenDisplayName, GenName, GenCategory);

@@ -1,13 +1,15 @@
 //EXAMPLE brick generator that doubles as a stress test. Places bajillions of bricks with random color/size all over the place.
 //Once you've created a generator, you'll need to include it as a script tag at the bottom of index.html.
 
-//We'll be using this a lot.
+//Metadata about the generator, specific to this implementation.
 var GenName = "StressTest";
+var GenDisplayName = "StressTest";
+var GenCategory = "Debug/Testing";
 
 //First argument is the display name of the generator; should be unique as we're also using it as an object index.
 //Second argument is a list of main generation objects that will have their 'apply' functions called in order. The object MUST contain a function named 'apply'. This will always be passed two arguments: "inst" is the current generator instance (keeps track of internal variables), "promise" is a $.Deferred() passed by the StagedBrickGenerator.
 //Once generation is done, the apply function should call promise.resolve(inst). Passing the instance variable to promise.resolve() is IMPORTANT! SBG can't keep track of it on its own.
-Generators[GenName] = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(function(inst) {
+var NewGen = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(function(inst) {
 	//SBG_SlowIterator is a wrapper around the SBG Stage functionality described above. It executes an iterator function repeatedly over time, and resolves the promise passed by SBG once the iterator returns TRUE.
 	
 	//Some math on internal variables created during the OnSetup callback:
@@ -114,7 +116,7 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(fu
 //3rd and 4th arguments are the min/max values to clamp the entire system to.
 //5th and 6th arguments are the default values to set the elements to (assumed sane, be careful).
 //Optional 7th argument creates a margin (values must be at least that far apart) -- default is 0 (no margin).
-LinkNumInputs(Generators[GenName].controls.MinBrick, Generators[GenName].controls.MaxBrick, 1, 10, 1, 6);
+LinkNumInputs(NewGen.controls.MinBrick, NewGen.controls.MaxBrick, 1, 10, 1, 6);
 
 
 
@@ -122,7 +124,4 @@ LinkNumInputs(Generators[GenName].controls.MinBrick, Generators[GenName].control
 //TODO: To perform synchronous generation, use someBrickGenerator.generateSync(function(brickBuffer){}). This was an option in normal non-staged BrickGenerators which included the SlowIterator functionality by default (now deprecated and removed); StagedBrickGenerators do not have this yet.
 
 //Add this generator to the main list. Complicated because of IE compatibility, even though a lot of other things in this app probably aren't IE-compatible /shrug
-var o = new Option(GenName, GenName);
-$(o).html(GenName);
-$("#generator-type").append(o);
-Generators[GenName].OptionElement = o;
+RegisterGenerator(NewGen, GenDisplayName, GenName, GenCategory);

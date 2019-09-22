@@ -1,7 +1,9 @@
 //https://gist.github.com/Meshiest/0b1a5b3dc4a9337c359e94d33ba322a5
 var GenName = "OcTerrain";
+var GenDisplayName = "OcTerrain";
+var GenCategory = "Procedural Generation";
 
-Generators[GenName] = new StagedBrickGenerator(GenName, [
+var NewGen = new StagedBrickGenerator(GenName, [
 ///// STAGE 1: Heightmap Generation
 	new SBG_SlowIterator(function(inst) {
 		var iv = 0;
@@ -508,7 +510,5 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 	},
 	Description: "Generates grassed terrain based on simplex noise, with reduced brickcount through the magic of octrees."
 });
-var o = new Option(GenName, GenName);
-$(o).html(GenName);
-$("#generator-type").append(o);
-Generators[GenName].OptionElement = o;
+
+RegisterGenerator(NewGen, GenDisplayName, GenName, GenCategory);

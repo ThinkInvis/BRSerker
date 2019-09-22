@@ -147,3 +147,21 @@ $("#btn-generate").click(function() {
 });
 
 cgen.slideUp().finish(); //TODO: this can probably be done in base CSS/HTML
+
+var RegisterGenerator = function(newGen, genDisplayName, genName, genCategory) {
+	Generators[genName] = newGen;
+	var o = new Option(genDisplayName, genName);
+	
+	if(typeof genCategory == "undefined")
+		$("#generator-type").append(o);
+	else {
+		var ncat = $("#generator-type optgroup[label='" + genCategory + "']");
+		if(ncat.length == 0) {
+			ncat = $("<optgroup>", {"label": genCategory});
+			$("#generator-type").append(ncat);
+		}
+		ncat.append(o);
+	}
+	
+	Generators[genName].OptionElement = o;
+}

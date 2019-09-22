@@ -1,8 +1,10 @@
 var GenName = "ImageReader";
+var GenDisplayName = "Image";
+var GenCategory = "File Readers";
 
 var MASTER_MAX_IMAGE = 1024;
 
-Generators[GenName] = new StagedBrickGenerator(GenName, [
+var NewGen = new StagedBrickGenerator(GenName, [
 	{apply: function(inst, promise) {
 		if(inst._statusEnabled)
 			inst._ticket.Text = "Waiting for file read...";
@@ -237,9 +239,7 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 	},
 	Description: "Efficiently generates bricks based on an image file."
 });
-var o = new Option(GenName, GenName);
-$(o).html(GenName);
-$("#generator-type").append(o);
-Generators[GenName].OptionElement = o;
 
-ParentOptionInput(Generators[GenName].controls.Quantize, [Generators[GenName].controls.PosterizeLabelX,Generators[GenName].controls.PosterizeLabelY, Generators[GenName].controls.PosterizeR, Generators[GenName].controls.PosterizeG, Generators[GenName].controls.PosterizeB, Generators[GenName].controls.PosterizeA], ["post"]);
+ParentOptionInput(NewGen.controls.Quantize, [NewGen.controls.PosterizeLabelX,NewGen.controls.PosterizeLabelY, NewGen.controls.PosterizeR, NewGen.controls.PosterizeG, NewGen.controls.PosterizeB, NewGen.controls.PosterizeA], ["post"]);
+
+RegisterGenerator(NewGen, GenDisplayName, GenName, GenCategory);

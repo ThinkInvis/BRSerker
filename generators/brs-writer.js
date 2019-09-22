@@ -1,4 +1,6 @@
 var GenName = "BrsWriter";
+var GenDisplayName = "BRS";
+var GenCategory = "File Writers";
 
 var BrsOwnerIndex = function(arr, own) {
 	for(var i = 0; i < arr.length; i++) {
@@ -13,7 +15,7 @@ var BrsColorIndex = function(arr, own) {
 	return -1;
 }
 
-Generators[GenName] = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(function(inst) {
+var NewGen = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(function(inst) {
 	var tb = inst.bricks[inst.currI];
 	
 	var nb = {};
@@ -124,7 +126,5 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(fu
 	},
 	Description: "Saves bricks to a Brickadia save file (.BRS). Will retain information from BrsReader!"
 });
-var o = new Option(GenName, GenName);
-$(o).html(GenName);
-$("#generator-type").append(o);
-Generators[GenName].OptionElement = o;
+
+RegisterGenerator(NewGen, GenDisplayName, GenName, GenCategory);

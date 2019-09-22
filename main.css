@@ -85,3 +85,6 @@ sub {
 a {
 	color: #aaf;
 }
+optgroup {
+	background-color: #222;
+}

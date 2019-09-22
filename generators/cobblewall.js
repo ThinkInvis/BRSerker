@@ -1,6 +1,8 @@
 var GenName = "CobbleWall";
+var GenDisplayName = "CobbleWall";
+var GenCategory = "Procedural Generation";
 
-Generators[GenName] = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(function(inst) {
+var NewGen = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(function(inst) {
 		var sizeLeft = inst.MaxX - inst.X;
 		
 		var newSize = THREE.Math.randInt(inst.RndMin, inst.RndMax);
@@ -76,9 +78,6 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(fu
 	Description: "Generates random walls designed to look like cobblestone or slate."
 });
 
-LinkNumInputs(Generators[GenName].controls.MinBrick, Generators[GenName].controls.MaxBrick, 1, 10, 1, 6);
+LinkNumInputs(NewGen.controls.MinBrick, NewGen.controls.MaxBrick, 1, 10, 1, 6);
 
-var o = new Option(GenName, GenName);
-$(o).html(GenName);
-$("#generator-type").append(o);
-Generators[GenName].OptionElement = o;
+RegisterGenerator(NewGen, GenDisplayName, GenName, GenCategory);

@@ -1,6 +1,8 @@
 var GenName = "BrsReader";
+var GenDisplayName = "BRS";
+var GenCategory = "File Readers";
 
-Generators[GenName] = new StagedBrickGenerator(GenName, [{apply: function(inst, promise) {
+var NewGen = new StagedBrickGenerator(GenName, [{apply: function(inst, promise) {
 	inst.fileObj.arrayBuffer().then(buffer => {
 		try {
 			inst.brsdata = BRS.read(new Uint8Array(buffer));
@@ -119,7 +121,5 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [{apply: function(inst, 
 	},
 	Description: "Loads bricks and related data from a Brickadia save file (.BRS)."
 });
-var o = new Option(GenName, GenName);
-$(o).html(GenName);
-$("#generator-type").append(o);
-Generators[GenName].OptionElement = o;
+
+RegisterGenerator(NewGen, GenDisplayName, GenName, GenCategory);

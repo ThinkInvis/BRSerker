@@ -1,6 +1,8 @@
 var GenName = "BlsWriter";
+var GenDisplayName = "BLS";
+var GenCategory = "File Writers";
 
-Generators[GenName] = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(function(inst) {
+var NewGen = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(function(inst) {
 	var tb = inst.bricks[inst.currI];
 	
 	//TODO: export generated ramps, etc. only supports basic for now, except preloaded bricks.
@@ -81,7 +83,5 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(fu
 	},
 	Description: "Saves bricks to a Blockland save file (.BLS). Will retain information from BlsReader!"
 });
-var o = new Option(GenName, GenName);
-$(o).html(GenName);
-$("#generator-type").append(o);
-Generators[GenName].OptionElement = o;
+
+RegisterGenerator(NewGen, GenDisplayName, GenName, GenCategory);
