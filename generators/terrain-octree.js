@@ -285,7 +285,7 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 				if(isCenter) return;
 				var nbHeight = Math.floor(val);
 				if(nbHeight < lowestNeighbor) lowestNeighbor = nbHeight;
-			}, 1, inst.currX, inst.currY, inst.maxX, inst.maxY);
+			}, inst.heightmap, 1, inst.currX, inst.currY, inst.maxX, inst.maxY);
 		}
 		
 		//in non-cave generation we can go really fast along the z axis so don't bother slowiterating it
