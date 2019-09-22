@@ -398,8 +398,7 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 		if(!inst.doCaves) return true;
 		var currHeight = Math.floor(inst.heightmap[inst.currX][inst.currY]);
 		
-		var cap = currHeight + ((currHeight >= inst.grassCutoff) ? inst.grassDepth : 0);
-		cap = Math.min(inst.maxZ, cap);
+		var cap = Math.min(inst.maxZ, currHeight);
 		
 		for(var k = 0; k < cap; k++) {
 			if(inst.cavemap[inst.currX][inst.currY][k] < inst.vNoiseChance)
@@ -412,6 +411,28 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 				//foundNeighbor is only true if we're not in a cave-carved voxel, BUT one of the adjacent voxels is
 				if(foundNeighbor)
 					inst.vox[inst.currX][inst.currY][k] = inst.mainColor;
+			}
+		}
+		
+		if(inst.cavemap[inst.currX][inst.currY][cap-1] < inst.vNoiseChance) {
+			//punch holes in grass
+			if(currHeight >= inst.grassCutoff) {
+				var cap2 = Math.min(inst.maxZ, currHeight+inst.grassDepth);
+				for(var k = cap; k < cap2; k++) {
+					inst.vox[inst.currX][inst.currY][k] = "skip";
+				}
+			}
+		} else if(inst.cavePatchDepth > -1) {
+			//patch up surface that may have been vertically shredded by near-surface caves
+			var lowestNeighbor = cap;
+			mapLocalIter2(function(val,x,y,isCenter){
+				if(isCenter) return;
+				if(inst.cavemap[x][y][Math.max(val-1,0)] >= inst.vNoiseChance) return;
+				var nbHeight = Math.floor(val);
+				if(nbHeight < lowestNeighbor) lowestNeighbor = nbHeight;
+			}, inst.heightmap, 1, inst.currX, inst.currY, inst.maxX, inst.maxY);
+			for(var k = lowestNeighbor-inst.cavePatchDepth; k < cap; k++) {
+				inst.vox[inst.currX][inst.currY][k] = inst.mainColor;
 			}
 		}
 			
@@ -505,7 +526,7 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 			CaveResolutionXY: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":-4, "max":4, "value":1.3, "step":0.01}),
 			CaveResolutionZLabel: $("<span>", {"class":"opt-1-2","html":"Cave Z scale: <span class='hint'>(10<sup>-n</sup>)</span>"}),
 			CaveResolutionZ: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":-4, "max":4, "value":2, "step":0.01}),
-			CavePercentLabel: $("<span>", {"class":"opt-1-2","html":"Cave ratio: <span class='hint'>(0 = no caves)</span>"}),
+			CavePercentLabel: $("<span>", {"class":"opt-1-2","html":"Cave ratio: <span class='hint'>0 = no caves</span>"}),
 			CavePercent: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":1, "value":0.4, "step":0.01}),
 			CaveSTRadiusLabel: $("<span>", {"class":"opt-1-2","html":"Surf. tens. radius:"}),
 			CaveSTRadius: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":64, "value":8, "step":1}),
@@ -514,7 +535,9 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 			CaveBTRadiusLabel: $("<span>", {"class":"opt-1-2","html":"Floor tens. radius:"}),
 			CaveBTRadius: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":64, "value":8, "step":1}),
 			CaveBTStrengthLabel: $("<span>", {"class":"opt-1-2","html":"Floor tens. strength:"}),
-			CaveBTStrength: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":1, "value":0.4, "step":0.01})
+			CaveBTStrength: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":1, "value":0.4, "step":0.01}),
+			CavePatchDepthLabel: $("<span>", {"class":"opt-1-2","html":"Surf. patch:<span class='hint'> -1 to disable</span>"}),
+			CavePatchDepth: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":-1, "max":16, "value":1, "step":1})
 		};
 		cObj.CavesMaster = $("<button>", {"class":"opt-1-1","text":"Show/Hide: Cave Options"});
 		cObj.CavesContainer = $("<div>", {"class":"controls-subsubpanel","style":"display:none;"});
@@ -573,6 +596,7 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 		inst.grassColor = [this.controls.BrickOpts.GColorR.val()*1, this.controls.BrickOpts.GColorG.val()*1, this.controls.BrickOpts.GColorB.val()*1, 1.0];
 		inst.grassDepth = this.controls.LayerOpts.GrassDepth.val()*1;
 		inst.skinDepth = this.controls.LayerOpts.MaxDepth.val()*1;
+		inst.cavePatchDepth = this.controls.CavesOpts.CavePatchDepth.val()*1;
 		
 		inst.hNoiseOctaves = this.controls.NoiseOpts.Octaves.val()*1;
 		inst.hNoisePersistence = this.controls.NoiseOpts.Persistence.val()*1;
