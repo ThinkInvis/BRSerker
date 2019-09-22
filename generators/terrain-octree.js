@@ -174,46 +174,6 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 			return "Generating heightmap... " + Math.floor(inst.currY/inst.maxY*100) + "%";
 		}
 	}),
-///// STAGE 1b: Cavemap Generation
-	new SBG_SlowIterator(function(inst) {
-		if(!inst.doCaves) return true;
-		
-		var i = inst.currX;
-		var j = inst.currY;
-		var k = inst.currZ;
-		
-		inst.cavemap[inst.currX][inst.currY][inst.currZ] = 0.5 * (1 + noise.simplex3(
-			inst.currX/inst.vNoiseResolution,
-			inst.currY/inst.vNoiseResolution,
-			inst.currZ/inst.vNoiseResolution
-		));
-		
-		inst.currZ++;
-		if(inst.currZ >= inst.maxZ) {
-			inst.currZ=0;
-			inst.currY++;
-			inst.cavemap[inst.currX][inst.currY] = [];
-		}
-		if(inst.currY >= inst.maxY) {
-			inst.currY=0;
-			inst.currX++;
-			inst.cavemap[inst.currX] = [[]];
-		}
-		return inst.currX >= inst.maxX;
-	},{
-		RunSpeed: 50,
-		MaxExecTime: 40,
-		OnStageSetup: function(inst) {
-			if(!inst.doCaves) return;
-			inst.cavemap = [[[]]];
-			inst.currX = 0;
-			inst.currY = 0;
-			inst.currZ = 0;
-		},
-		OnStagePause: function(inst) {
-			return "Generating cavemap... " + Math.floor(inst.currX/inst.maxX*100) + "%";
-		}
-	}),
 ///// STAGE 2: Heightmap Smoothing - NYI, maybe not necessary
 ///// STAGE 3a: Falloff map generation
 	new SBG_SlowIterator(function(inst) {
@@ -377,7 +337,95 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 			return "Voxelizing... " + Math.floor(inst.currY/inst.maxY*100) + "%";
 		}
 	}),
-///// STAGE 5: Cave Voxel Mapping/Carving -- NYI
+///// STAGE 5: Cavemap Generation
+	new SBG_SlowIterator(function(inst) {
+		if(!inst.doCaves) return true;
+		
+		var i = inst.currX;
+		var j = inst.currY;
+		var k = inst.currZ;
+		
+		inst.cavemap[inst.currX][inst.currY][inst.currZ] = 0.5 * (1 + noise.simplex3(
+			inst.currX/inst.vNoiseResolutionXY,
+			inst.currY/inst.vNoiseResolutionXY,
+			inst.currZ/inst.vNoiseResolutionZ
+		));
+		
+		//"surface tension" - reduce cave generation chance while near surface
+		var currHeight = inst.heightmap[inst.currX][inst.currY];
+		var surfDist = Math.max(currHeight - inst.currZ, 0);
+		if(surfDist <= inst.vNoiseSTR) {
+			var STFac = surfDist/inst.vNoiseSTR;
+			inst.cavemap[inst.currX][inst.currY][inst.currZ] += (1-STFac) * inst.vNoiseSTS;
+		}
+		
+		inst.currZ++;
+		if(inst.currZ >= inst.maxZ) {
+			inst.currZ=0;
+			inst.currY++;
+			inst.cavemap[inst.currX][inst.currY] = [];
+		}
+		if(inst.currY >= inst.maxY) {
+			inst.currY=0;
+			inst.currX++;
+			inst.cavemap[inst.currX] = [[]];
+		}
+		return inst.currX >= inst.maxX;
+	},{
+		RunSpeed: 50,
+		MaxExecTime: 40,
+		OnStageSetup: function(inst) {
+			if(!inst.doCaves) return;
+			inst.cavemap = [[[]]];
+			inst.currX = 0;
+			inst.currY = 0;
+			inst.currZ = 0;
+		},
+		OnStagePause: function(inst) {
+			return "Generating cavemap... " + Math.floor(inst.currX/inst.maxX*100) + "%";
+		}
+	}),
+///// STAGE 6: Cave Voxel Mapping/Carving
+	new SBG_SlowIterator(function(inst) {
+		if(!inst.doCaves) return true;
+		var currHeight = Math.floor(inst.heightmap[inst.currX][inst.currY]);
+		
+		var cap = currHeight + ((currHeight >= inst.grassCutoff) ? inst.grassDepth : 0);
+		cap = Math.min(inst.maxZ, cap);
+		
+		for(var k = 0; k < cap; k++) {
+			if(inst.cavemap[inst.currX][inst.currY][k] < inst.vNoiseChance)
+				inst.vox[inst.currX][inst.currY][k] = "skip";
+			else if(inst.skinDepth > 0 && k < currHeight - inst.skinDepth) { //skin depth is on, generate shell around caves
+				var foundNeighbor = false;
+				mapLocalIter3(function(val,x,y,z){
+					if(val < inst.vNoiseChance) foundNeighbor = true;
+				}, inst.cavemap, 1, inst.currX, inst.currY, k, inst.maxX, inst.maxY, inst.maxZ);
+				//foundNeighbor is only true if we're not in a cave-carved voxel, BUT one of the adjacent voxels is
+				if(foundNeighbor)
+					inst.vox[inst.currX][inst.currY][k] = inst.mainColor;
+			}
+		}
+			
+		inst.currX++;
+		if(inst.currX >= inst.maxX) {
+			inst.currX = 0;
+			inst.currY++;
+		}
+		return inst.currY >= inst.maxY;
+	},{
+		RunSpeed: 50,
+		MaxExecTime: 40,
+		Batching: 100,
+		OnStageSetup: function(inst) {
+			if(!inst.doCaves) return;
+			inst.currX = 0;
+			inst.currY = 0;
+		},
+		OnStagePause: function(inst) {
+			return "Carving caves... " + Math.floor(inst.currY/inst.maxY*100) + "%";
+		}
+	}),
 ///// STAGE 6: Octree Minimization
 	SBGSI_OctreeVoxels], {
 	Controls: (function() {
@@ -443,12 +491,18 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 		ParentClickInput(cObj.FalloffMaster, [cObj.FalloffContainer]);
 		
 		cObj.CavesOpts = {
-			DoCavesLabel: $("<span>", {"class":"opt-1-2","html":"Add caves: <span class='hint'>iffy, be careful</span>"}),
+			DoCavesLabel: $("<span>", {"class":"opt-1-2","html":"Add caves:"}),
 			DoCaves: $("<span>", {"class":"opt-1-2 cb-container opt-input", "html":"&nbsp;"}).append($("<input>", {"type":"checkbox","checked":false})),
-			CaveResolutionLabel: $("<span>", {"class":"opt-1-2","html":"Cave base scale: <span class='hint'>(10<sup>-n</sup>)</span>"}),
-			CaveResolution: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":-4, "max":4, "value":1, "step":0.01}),
-			CavePercentLabel: $("<span>", {"class":"opt-1-2","html":"Cave ratio: <span class='hint'>(1 = no caves)</span>"}),
-			CavePercent: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":1, "value":0.75, "step":0.01})
+			CaveResolutionXYLabel: $("<span>", {"class":"opt-1-2","html":"Cave XY scale: <span class='hint'>(10<sup>-n</sup>)</span>"}),
+			CaveResolutionXY: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":-4, "max":4, "value":1, "step":0.01}),
+			CaveResolutionZLabel: $("<span>", {"class":"opt-1-2","html":"Cave Z scale: <span class='hint'>(10<sup>-n</sup>)</span>"}),
+			CaveResolutionZ: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":-4, "max":4, "value":2, "step":0.01}),
+			CavePercentLabel: $("<span>", {"class":"opt-1-2","html":"Cave ratio: <span class='hint'>(0 = no caves)</span>"}),
+			CavePercent: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":1, "value":0.3, "step":0.01}),
+			CaveSTRadiusLabel: $("<span>", {"class":"opt-1-2","html":"Surf. tens. radius:"}),
+			CaveSTRadius: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":64, "value":8, "step":1}),
+			CaveSTStrengthLabel: $("<span>", {"class":"opt-1-2","html":"Surf. tens. strength:"}),
+			CaveSTStrength: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":1, "value":0.15, "step":0.01})
 		};
 		cObj.CavesMaster = $("<button>", {"class":"opt-1-1","text":"Show/Hide: Cave Options"});
 		cObj.CavesContainer = $("<div>", {"class":"controls-subsubpanel","style":"display:none;"});
@@ -513,8 +567,11 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 		inst.hNoiseScale = this.controls.NoiseOpts.Scale.val()*1;
 		inst.hNoiseOffset = this.controls.NoiseOpts.Offset.val()*1;
 		inst.hNoiseResolution = Math.pow(10, this.controls.NoiseOpts.Resolution.val()*1);
-		inst.vNoiseResolution = Math.pow(10, this.controls.CavesOpts.CaveResolution.val()*1);
+		inst.vNoiseResolutionXY = Math.pow(10, this.controls.CavesOpts.CaveResolutionXY.val()*1);
+		inst.vNoiseResolutionZ = Math.pow(10, this.controls.CavesOpts.CaveResolutionZ.val()*1);
 		inst.vNoiseChance = this.controls.CavesOpts.CavePercent.val()*1;
+		inst.vNoiseSTR = this.controls.CavesOpts.CaveSTRadius.val()*1;
+		inst.vNoiseSTS = this.controls.CavesOpts.CaveSTStrength.val()*1;
 		
 		inst.grassCutoff = this.controls.LayerOpts.GrassCutoff.val()*1;
 		
