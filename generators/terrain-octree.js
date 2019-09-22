@@ -320,13 +320,11 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 		var lowestNeighbor = currHeight;
 		
 		if(inst.skinDepth != 0) {
-			for(var i = -1; i <= 1; i++) {
-				for(var j = -1; j <= 1; j++) {
-					if(i == 0 && j == 0) continue;
-					var nbHeight = Math.floor(inst.heightmap[inst.currX+i][inst.currY+j]);
-					if(nbHeight < lowestNeighbor) lowestNeighbor = nbHeight;
-				}
-			}
+			mapLocalIter2(function(val,x,y,isCenter){
+				if(isCenter) return;
+				var nbHeight = Math.floor(val);
+				if(nbHeight < lowestNeighbor) lowestNeighbor = nbHeight;
+			}, 1, inst.currX, inst.currY, inst.maxX, inst.maxY);
 		}
 		
 		//in non-cave generation we can go really fast along the z axis so don't bother slowiterating it
@@ -374,7 +372,6 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 			}
 			inst.currX = 0;
 			inst.currY = 0;
-			inst.currZ = 0;
 		},
 		OnStagePause: function(inst) {
 			return "Voxelizing... " + Math.floor(inst.currY/inst.maxY*100) + "%";

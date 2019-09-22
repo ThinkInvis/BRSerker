@@ -151,3 +151,31 @@ var ColorQuantize = function(color, colorset) {
 var	fracToInt = function (low, high, src) {
 	return low + Math.floor(src * ( high - low + 1 ));
 }
+
+var mapLocalIter2 = function(func, map, r, x, y, bx, by) {
+	var rxm = Math.max(x-r, 0);
+	var rxp = Math.min(x+r, bx-1);
+	var rym = Math.max(y-r, 0);
+	var ryp = Math.min(y+r, by-1);
+	for(var i = rxm; i <= rxp; i++) {
+		for(var j = rym; j <= ryp; j++) {
+			func(map[i][j], i, j, (i == x) && (j == y));
+		}
+	}
+}
+
+var mapLocalIter3 = function(func, map, r, x, y, z, bx, by, bz) {
+	var rxm = Math.max(x-r, 0);
+	var rxp = Math.min(x+r, bx-1);
+	var rym = Math.max(y-r, 0);
+	var ryp = Math.min(y+r, by-1);
+	var rzm = Math.max(z-r, 0);
+	var rzp = Math.min(z+r, bz-1);
+	for(var i = rxm; i <= rxp; i++) {
+		for(var j = rym; j <= ryp; j++) {
+			for(var k = rzm; k <= rzp; k++) {
+				func(map[i][j][k], i, j, k, (i == x) && (j == y) && (k == z));
+			}
+		}
+	}
+}
