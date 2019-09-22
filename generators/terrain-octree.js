@@ -500,19 +500,19 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 			DoCavesLabel: $("<span>", {"class":"opt-1-2","html":"Add caves:"}),
 			DoCaves: $("<span>", {"class":"opt-1-2 cb-container opt-input", "html":"&nbsp;"}).append($("<input>", {"type":"checkbox","checked":false})),
 			CaveResolutionXYLabel: $("<span>", {"class":"opt-1-2","html":"Cave XY scale: <span class='hint'>(10<sup>-n</sup>)</span>"}),
-			CaveResolutionXY: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":-4, "max":4, "value":1, "step":0.01}),
+			CaveResolutionXY: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":-4, "max":4, "value":1.3, "step":0.01}),
 			CaveResolutionZLabel: $("<span>", {"class":"opt-1-2","html":"Cave Z scale: <span class='hint'>(10<sup>-n</sup>)</span>"}),
 			CaveResolutionZ: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":-4, "max":4, "value":2, "step":0.01}),
 			CavePercentLabel: $("<span>", {"class":"opt-1-2","html":"Cave ratio: <span class='hint'>(0 = no caves)</span>"}),
-			CavePercent: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":1, "value":0.3, "step":0.01}),
+			CavePercent: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":1, "value":0.4, "step":0.01}),
 			CaveSTRadiusLabel: $("<span>", {"class":"opt-1-2","html":"Surf. tens. radius:"}),
 			CaveSTRadius: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":64, "value":8, "step":1}),
 			CaveSTStrengthLabel: $("<span>", {"class":"opt-1-2","html":"Surf. tens. strength:"}),
-			CaveSTStrength: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":1, "value":0.15, "step":0.01}),
+			CaveSTStrength: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":1, "value":0.25, "step":0.01}),
 			CaveBTRadiusLabel: $("<span>", {"class":"opt-1-2","html":"Floor tens. radius:"}),
 			CaveBTRadius: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":64, "value":8, "step":1}),
 			CaveBTStrengthLabel: $("<span>", {"class":"opt-1-2","html":"Floor tens. strength:"}),
-			CaveBTStrength: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":1, "value":0.3, "step":0.01})
+			CaveBTStrength: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":1, "value":0.4, "step":0.01})
 		};
 		cObj.CavesMaster = $("<button>", {"class":"opt-1-1","text":"Show/Hide: Cave Options"});
 		cObj.CavesContainer = $("<div>", {"class":"controls-subsubpanel","style":"display:none;"});
