@@ -358,6 +358,12 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 			var STFac = surfDist/inst.vNoiseSTR;
 			inst.cavemap[inst.currX][inst.currY][inst.currZ] += (1-STFac) * inst.vNoiseSTS;
 		}
+		//"floor tension" - same deal but near the bottom of the build to avoid exposing map floor
+		if(inst.currZ <= inst.vNoiseBTR) {
+			var BTFac = inst.currZ/inst.vNoiseBTR;
+			inst.cavemap[inst.currX][inst.currY][inst.currZ] += (1-BTFac) * inst.vNoiseBTS;
+		}
+		
 		
 		inst.currZ++;
 		if(inst.currZ >= inst.maxZ) {
@@ -502,7 +508,11 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 			CaveSTRadiusLabel: $("<span>", {"class":"opt-1-2","html":"Surf. tens. radius:"}),
 			CaveSTRadius: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":64, "value":8, "step":1}),
 			CaveSTStrengthLabel: $("<span>", {"class":"opt-1-2","html":"Surf. tens. strength:"}),
-			CaveSTStrength: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":1, "value":0.15, "step":0.01})
+			CaveSTStrength: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":1, "value":0.15, "step":0.01}),
+			CaveBTRadiusLabel: $("<span>", {"class":"opt-1-2","html":"Floor tens. radius:"}),
+			CaveBTRadius: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":64, "value":8, "step":1}),
+			CaveBTStrengthLabel: $("<span>", {"class":"opt-1-2","html":"Floor tens. strength:"}),
+			CaveBTStrength: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":1, "value":0.3, "step":0.01})
 		};
 		cObj.CavesMaster = $("<button>", {"class":"opt-1-1","text":"Show/Hide: Cave Options"});
 		cObj.CavesContainer = $("<div>", {"class":"controls-subsubpanel","style":"display:none;"});
@@ -572,6 +582,8 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 		inst.vNoiseChance = this.controls.CavesOpts.CavePercent.val()*1;
 		inst.vNoiseSTR = this.controls.CavesOpts.CaveSTRadius.val()*1;
 		inst.vNoiseSTS = this.controls.CavesOpts.CaveSTStrength.val()*1;
+		inst.vNoiseBTR = this.controls.CavesOpts.CaveBTRadius.val()*1;
+		inst.vNoiseBTS = this.controls.CavesOpts.CaveBTStrength.val()*1;
 		
 		inst.grassCutoff = this.controls.LayerOpts.GrassCutoff.val()*1;
 		
