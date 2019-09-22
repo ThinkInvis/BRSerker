@@ -143,8 +143,8 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 		for(var k = 0; k < inst.hNoiseOctaves; k++) {
 			ampt += amp;
 			iv += amp * noise.simplex2(
-				inst.currX/inst.hNoiseResolution * freq,
-				inst.currY/inst.hNoiseResolution * freq
+				(inst.currX+inst.posX)/inst.hNoiseResolution * freq,
+				(inst.currY+inst.posY)/inst.hNoiseResolution * freq
 			);
 			freq *= 2;
 			amp *= inst.hNoisePersistence;
@@ -175,8 +175,7 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 			return "Generating heightmap... " + Math.floor(inst.currY/inst.maxY*100) + "%";
 		}
 	}),
-///// STAGE 2: Heightmap Smoothing - NYI, maybe not necessary
-///// STAGE 3a: Falloff map generation
+///// STAGE 2: Falloff map generation
 	new SBG_SlowIterator(function(inst) {
 		if(!inst.doFalloff) return true;
 		//rolling particle mask
@@ -250,7 +249,7 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 			}
 		}
 	}),
-///// STAGE 3b: Apply Falloff
+///// STAGE 3: Apply Falloff
 	new SBG_SlowIterator(function(inst) {
 		if(!inst.doFalloff) return true;
 		inst.heightmap[inst.currX][inst.currY] *= inst.pmap[inst.currX][inst.currY];
@@ -347,9 +346,9 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 		var k = inst.currZ;
 		
 		inst.cavemap[inst.currX][inst.currY][inst.currZ] = 0.5 * (1 + noise.simplex3(
-			inst.currX/inst.vNoiseResolutionXY,
-			inst.currY/inst.vNoiseResolutionXY,
-			inst.currZ/inst.vNoiseResolutionZ
+			(inst.currX+inst.posX)/inst.vNoiseResolutionXY,
+			(inst.currY+inst.posY)/inst.vNoiseResolutionXY,
+			(inst.currZ+inst.posZ)/inst.vNoiseResolutionZ
 		));
 		
 		//"surface tension" - reduce cave generation chance while near surface
@@ -459,23 +458,28 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 	SBGSI_OctreeVoxels], {
 	Controls: (function() {
 		var cObj = {};
+		cObj.HelpLabel = $("<span>", {"text":"Mouseover an option box for help with that option."});
 		cObj.NoiseOpts = {
+			SeedLabel: $("<span>", {"class":"opt-1-4","html":"Seed:"}),
+			Seed: $("<input>", {"type":"number", "class":"opt-3-4 opt-input", "value":0, "title": "Seed used to initialize all noise generators. Every chunk of terrain generated with the same seed will use the same set of random values. Note that changing other options (especially may seem to result in different patterns, even with the same seed."}),
+			SeedPosLabel: $("<span>", {"class":"opt-1-4","html":"Position:"}),
+			SeedPosX: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "value":0, "step":1, "title":"X position of the noise window. Noise generation basically uses a small window overlooking a very large area of potential noise. Use this to move said window around, in order to generate adjacent sections of terrain."}),
+			SeedPosY: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "value":0, "step":1, "title":"Y position of the noise window. Noise generation basically uses a small window overlooking a very large area of potential noise. Use this to move said window around, in order to generate adjacent sections of terrain."}),
+			SeedPosZ: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "value":0, "step":1, "title":"Z position of the noise window. Noise generation basically uses a small window overlooking a very large area of potential noise. Use this to move said window around, in order to generate adjacent sections of terrain. Z value is only relevant for the cavemap."}),
 			SizeLabel: $("<span>", {"class":"opt-1-4","text":"Gen area:"}),
-			SizeX: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "min":1, "max":1024, "value":64, "step":1}),
-			SizeY: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "min":1, "max":1024, "value":64, "step":1}),
-			SizeZ: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "min":1, "max":3072, "value":256, "step":1}),
-			SeedLabel: $("<span>", {"class":"opt-1-2","html":"Noise seed:"}),
-			Seed: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "value":0}),
+			SizeX: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "min":1, "max":1024, "value":64, "step":1, "title":"X size of various terrain maps (height, falloff, cave, voxel). May not be equal to build size!"}),
+			SizeY: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "min":1, "max":1024, "value":64, "step":1, "title":"Y size of various terrain maps (height, falloff, cave, voxel). May not be equal to build size!"}),
+			SizeZ: $("<input>", {"type":"number", "class":"opt-1-4 opt-input", "min":1, "max":3072, "value":256, "step":1, "title":"Z size of various terrain maps (cave, voxel). May not be equal to build size!"}),
+			ResolutionLabel: $("<span>", {"class":"opt-1-2","html":"Heightmap zoom: <span class='hint'>(10<sup>-n</sup>)</span>"}),
+			Resolution: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":-4, "max":4, "value":2.2, "step":0.01, "title": "Inverse horizontal scale of the noise window. Higher values = slower change in terrain height. Exponential, change *slowly* (~0.1 at a time)!"}),
 			ScaleLabel: $("<span>", {"class":"opt-1-2","html":"Height scale:"}),
-			Scale: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0.01, "max":1024, "value":128, "step":0.01}),
+			Scale: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0.01, "max":1024, "value":128, "step":0.01, "title": "Half the maximum height, in voxels, of the heightmap. Increase for taller differences in overall terrain height."}),
 			OffsetLabel: $("<span>", {"class":"opt-1-2","html":"Height offset:"}),
-			Offset: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":-2048, "max":2048, "value":128, "step":0.01}),
-			ResolutionLabel: $("<span>", {"class":"opt-1-2","html":"Height base scale: <span class='hint'>(10<sup>-n</sup>)</span>"}),
-			Resolution: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":-4, "max":4, "value":2.2, "step":0.01}),
+			Offset: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":-2048, "max":2048, "value":128, "step":0.01, "title": "Average height of the heightmap. Set to a value near that of 'Height scale', and set 'Gen area' Z to double that value, for best results on normal terrain. Islands may need a lower height offset for better results."}),
 			OctavesLabel: $("<span>", {"class":"opt-1-2","html":"Octaves:"}),
-			Octaves: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":1, "max":10, "value":3, "step":1}),
+			Octaves: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":1, "max":10, "value":3, "step":1, "title": "Number of octaves of noise to generate. More octaves = finer detail: each consecutive octave has double noise frequency, but lower noise scale as determined by 'persistence'."}),
 			PersistenceLabel: $("<span>", {"class":"opt-1-2","html":"Persistence:"}),
-			Persistence: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":1, "value":0.8, "step":0.001})
+			Persistence: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0.001, "max":0.999, "value":0.8, "step":0.001, "title":"Mutiplier for height scale per octave. E.g. at 0.8 persistence, the first octave has 1x height, the second octave has 0.8x height, the third octave has 0.64x (0.8*0.8) height...."})
 		};
 		cObj.NoiseMaster = $("<button>", {"class":"opt-1-1","text":"Show/Hide: Noise Options"});
 		cObj.NoiseContainer = $("<div>", {"class":"controls-subsubpanel","style":"display:none;"});
@@ -487,11 +491,11 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 		
 		cObj.LayerOpts = {
 			GrassDepthLabel: $("<span>", {"class":"opt-1-2","html":"Grass depth:<span class='hint'> 0 = no grass</span>"}),
-			GrassDepth: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":256, "value":3, "step":0.1}),
+			GrassDepth: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":256, "value":3, "step":0.1, "title": "The number of voxels of grass to generate directly above each voxel of terrain surface."}),
 			GrassCutoffLabel: $("<span>", {"class":"opt-1-2","html":"Grass cutoff below:"}),
-			GrassCutoff: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":256, "value":6, "step":0.1}),
+			GrassCutoff: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":256, "value":6, "step":0.1, "title": "Surface voxels below this height will not have grass."}),
 			MaxDepthLabel: $("<span>", {"class":"opt-1-2","html":"Skin depth:<span class='hint'> -1 = infinite</span>"}),
-			MaxDepth: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":-1, "max":256, "value":-1, "step":0.1})
+			MaxDepth: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":-1, "max":256, "value":-1, "step":1, "title":"If -1, terrain will be generated as one solid mass. If 0, only the terrain surface will be generated, with just enough thickness to prevent gaps. If above 0, that much extra thickness will be added beyond the minimum. Cave walls do not have the latter property, and will always be generated with a thickness of 1 if 'Skin depth' >= 0."})
 		};
 		cObj.LayerMaster = $("<button>", {"class":"opt-1-1","text":"Show/Hide: Layering Options"});
 		cObj.LayerContainer = $("<div>", {"class":"controls-subsubpanel","style":"display:none;"});
@@ -503,13 +507,13 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 		
 		cObj.FalloffOpts = {
 			DoFalloffLabel: $("<span>", {"class":"opt-1-2","html":"Add falloff:"}),
-			DoFalloff: $("<span>", {"class":"opt-1-2 cb-container opt-input", "html":"&nbsp;"}).append($("<input>", {"type":"checkbox","checked":false})),
+			DoFalloff: $("<span>", {"class":"opt-1-2 cb-container opt-input", "html":"&nbsp;", "title":"If checked, terrain height will be gradually reduced to 0 near the edges using a center-biased Rolling Particle Mask. A number of particles will be generated at random positions within a certain minimum distance from the edges of the falloff map. Per particle, a certain number of times, that particle will a. add 1 to the value of the falloff map at its current location, then b. move to a random adjacent tile that has a lower value than the one it's on."}).append($("<input>", {"type":"checkbox","checked":false})),
 			PLifeLabel: $("<span>", {"class":"opt-1-2","html":"Particle lifetime:"}),
-			PLife: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":2, "max":1000, "value":50, "step":1}),
+			PLife: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":2, "max":200, "value":50, "step":1, "title":"The number of iterations to run for each particle in the Rolling Particle Mask (mouseover 'Add falloff' for overview of this algorithm). Higher values --> smoother falloff map with less effect; lower values --> rough falloff map with extremely small islands."}),
 			PCountLabel: $("<span>", {"class":"opt-1-2","html":"Particle density:<span class='hint'> per-pixel</span>"}),
-			PCount: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":1, "max":100, "value":3, "step":1}),
+			PCount: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":1, "max":1000, "value":5, "step":1, "title":"The average number of particles to generate per-pixel for the Rolling Particle Mask (mouseover 'Add falloff' for overview of this algorithm). Higher values --> smoother falloff map, with almost no side-effects until extremely high values (which can give the map a faceted appearance)."}),
 			EdgeLabel: $("<span>", {"class":"opt-1-2","html":"Padding radius:</span>"}),
-			Edge: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":256, "value":32, "step":1})
+			Edge: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":256, "value":16, "step":1, "title":"The minimum distance from any edge of the heightmap to generate particles for the Rolling Particle Mask (mouseover 'Add falloff' for overview of this algorithm). Higher values --> smaller islands; lower values --> more sudden cutoff near edges."})
 		};
 		cObj.FalloffMaster = $("<button>", {"class":"opt-1-1","text":"Show/Hide: Island Falloff Options"});
 		cObj.FalloffContainer = $("<div>", {"class":"controls-subsubpanel","style":"display:none;"});
@@ -522,9 +526,9 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 		cObj.CavesOpts = {
 			DoCavesLabel: $("<span>", {"class":"opt-1-2","html":"Add caves:"}),
 			DoCaves: $("<span>", {"class":"opt-1-2 cb-container opt-input", "html":"&nbsp;"}).append($("<input>", {"type":"checkbox","checked":false})),
-			CaveResolutionXYLabel: $("<span>", {"class":"opt-1-2","html":"Cave XY scale: <span class='hint'>(10<sup>-n</sup>)</span>"}),
+			CaveResolutionXYLabel: $("<span>", {"class":"opt-1-2","html":"Cave XY zoom: <span class='hint'>(10<sup>-n</sup>)</span>"}),
 			CaveResolutionXY: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":-4, "max":4, "value":1.3, "step":0.01}),
-			CaveResolutionZLabel: $("<span>", {"class":"opt-1-2","html":"Cave Z scale: <span class='hint'>(10<sup>-n</sup>)</span>"}),
+			CaveResolutionZLabel: $("<span>", {"class":"opt-1-2","html":"Cave Z zoom: <span class='hint'>(10<sup>-n</sup>)</span>"}),
 			CaveResolutionZ: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":-4, "max":4, "value":2, "step":0.01}),
 			CavePercentLabel: $("<span>", {"class":"opt-1-2","html":"Cave ratio: <span class='hint'>0 = no caves</span>"}),
 			CavePercent: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":1, "value":0.4, "step":0.01}),
@@ -597,6 +601,10 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 		inst.grassDepth = this.controls.LayerOpts.GrassDepth.val()*1;
 		inst.skinDepth = this.controls.LayerOpts.MaxDepth.val()*1;
 		inst.cavePatchDepth = this.controls.CavesOpts.CavePatchDepth.val()*1;
+		
+		inst.posX = this.controls.NoiseOpts.SeedPosX.val()*1;
+		inst.posY = this.controls.NoiseOpts.SeedPosY.val()*1;
+		inst.posZ = this.controls.NoiseOpts.SeedPosZ.val()*1;
 		
 		inst.hNoiseOctaves = this.controls.NoiseOpts.Octaves.val()*1;
 		inst.hNoisePersistence = this.controls.NoiseOpts.Persistence.val()*1;
