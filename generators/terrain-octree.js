@@ -103,6 +103,7 @@ var SBGSI_OctreeVoxels = new SBG_SlowIterator(function(inst) {
 },{
 	RunSpeed: 50,
 	MaxExecTime: 40,
+	Batching: 1000,
 	OnStageSetup: function(inst) {
 		inst.totalLeafTracker = 1;
 		
@@ -380,6 +381,7 @@ Generators[GenName] = new StagedBrickGenerator(GenName, [
 	},{
 		RunSpeed: 50,
 		MaxExecTime: 40,
+		Batching: 1000,
 		OnStageSetup: function(inst) {
 			if(!inst.doCaves) return;
 			inst.cavemap = [[[]]];
