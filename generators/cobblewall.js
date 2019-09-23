@@ -12,8 +12,7 @@ var NewGen = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(function(in
 		var ncS = THREE.Math.clamp(inst.SBasis + THREE.Math.randFloat(-inst.SVar/2, inst.SVar/2), 0, 1);
 		var ncV = THREE.Math.clamp(inst.VBasis + THREE.Math.randFloat(-inst.VVar/2, inst.VVar/2), 0, 1);
 		var ncRgb = hsvToRgb(ncH, ncS, ncV);
-		var ncq = ColorQuantize([ncRgb[0]/255,ncRgb[1]/255,ncRgb[2]/255, 1.0], brsColorsetRGB).Color;
-		var newColor = new THREE.Color(ncq[0], ncq[1], ncq[2]);
+		var newColor = new THREE.Color(ncRgb[0]/255, ncRgb[1]/255, ncRgb[2]/255);
 		
 		var brk = new InternalBrick(
 			new THREE.Vector3(newSize, 1, 1),
