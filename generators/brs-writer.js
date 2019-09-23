@@ -28,6 +28,12 @@ var NewGen = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(function(in
 		owner = tb.BrsData.Owner;
 	} else {
 		switch(tb.IntRef) {
+			case "SideWedge":
+				assetname = "PB_DefaultSideWedge";
+				break;
+			case "Wedge":
+				assetname = "PB_DefaultWedge";
+				break;
 			case "Ramp":
 				assetname = "PB_DefaultRamp";
 				break;
