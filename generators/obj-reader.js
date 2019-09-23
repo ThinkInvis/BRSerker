@@ -128,8 +128,6 @@ var NewGen = new StagedBrickGenerator(GenName, [
 			inst.maxY = Math.ceil(inst.bsize.y*inst.res/inst.bmax);
 			inst.maxZ = Math.ceil(inst.bsize.z*inst.res/inst.bmax);
 			
-			console.log(inst);
-			
 			inst.vox = [];
 			for(var i = 0; i < inst.maxX; i++) {
 				inst.vox[i] = [];
