@@ -121,23 +121,20 @@ $("#btn-generate").click(function() {
 	var rprm = currGen.generate({BrickCountCap:MASTER_BRICK_LIMIT-BrickList.length, StatusContainer:$("#status-container")}, {"BrickList":BrickList});
 	GenRunning = rprm;
 	$.when(rprm).done(function(buf) {
-		if(typeof buf === "undefined" || buf.length == 0) {
-			GenRunning = undefined;
-			GenEnable();
-			return;
-		}
-		var autoshift = $("#opt-genautoshift").get(0).checked;
-		var shx = $("#shiftx").val()*1;
-		var shy = $("#shifty").val()*1;
-		var shz = $("#shiftz").val()*1;
-		while(buf.length > 0) {
-			var brk = buf.pop();
-			if(autoshift) {
-				brk.Position.x += shx;
-				brk.Position.y += shy;
-				brk.Position.z += shz;
+		if(typeof buf !== "undefined") {
+			var autoshift = $("#opt-genautoshift").get(0).checked;
+			var shx = $("#shiftx").val()*1;
+			var shy = $("#shifty").val()*1;
+			var shz = $("#shiftz").val()*1;
+			while(buf.length > 0) {
+				var brk = buf.pop();
+				if(autoshift) {
+					brk.Position.x += shx;
+					brk.Position.y += shy;
+					brk.Position.z += shz;
+				}
+				BrickList.push(brk);
 			}
-			BrickList.push(brk);
 		}
 		GenRunning = undefined;
 		GenEnable();
