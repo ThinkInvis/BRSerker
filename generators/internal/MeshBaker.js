@@ -11,6 +11,44 @@ var GenerateSimpleBrick = function(i, j, k, shape) {
 			//supports non-square sizes even though it really doesn't need to
 			return new THREE.CylinderGeometry(i/2-BevelRadius,i/2-BevelRadius,k/3-BevelRadius,8).rotateX(3.1415/2).scale(1,(j/2-BevelRadius)/(i/2-BevelRadius),1).translate(BevelRadius/2,BevelRadius/2,BevelRadius/2);
 			break;*/
+		case "Wedge":
+			var geom = new THREE.BufferGeometry();
+			geom.addAttribute('position', new THREE.BufferAttribute(new Float32Array([
+				-0.5, 0.5, -0.5,
+				0.5, 0.5, -0.5,
+				0.5, -0.5, -0.5,
+				-0.5, -0.5, -0.5,
+				
+				-0.5, 0.5, 0.5,
+				0.5, 0.5, 0.5
+			]), 3));
+			geom.index = new THREE.BufferAttribute(new Uint8Array([
+				//bottom face: 0123
+				0,1,2,
+				0,2,3,
+				//back face: 0145
+				0,5,1,
+				0,4,5,
+				//hypotenuse face: 2345
+				2,5,4,
+				2,4,3,
+				//left face: 034
+				0,3,4,
+				//right face: 125 (three, sir)
+				1,5,2
+			]),1);
+
+			geom.addAttribute('vertOffset', new THREE.BufferAttribute(new Float32Array([
+				BevelRadius, -BevelRadius, BevelRadius,
+				-BevelRadius, -BevelRadius, BevelRadius,
+				-BevelRadius, BevelRadius, BevelRadius,
+				BevelRadius, BevelRadius, BevelRadius,
+				
+				BevelRadius, -BevelRadius, -BevelRadius,
+				-BevelRadius, -BevelRadius, -BevelRadius
+			]), 3));
+			return geom;
+			break;
 		case "Ramp":
 			var geom = new THREE.BufferGeometry();
 			geom.addAttribute('position', new THREE.BufferAttribute(new Float32Array([
@@ -345,20 +383,33 @@ var GenInstGeom = {
 	Cone: SetupMasterInst("Cone"),
 	Round: SetupMasterInst("Round"),
 	Ramp: SetupMasterInst("Ramp"),
-	RampCorner: SetupMasterInst("RampCorner")
+	RampCorner: SetupMasterInst("RampCorner"),
+	Wedge: SetupMasterInst("Wedge")
 }
 var GenInstGeomIndexed = [
 	GenInstGeom.Basic,
 	GenInstGeom.Cone,
 	GenInstGeom.Round,
 	GenInstGeom.Ramp,
-	GenInstGeom.RampCorner
+	GenInstGeom.RampCorner,
+	GenInstGeom.Wedge
 ];
 
 //squishing all these bricks together is slow, so use a slowiterator to avoid locking the UI thread
 var SBG_SI_MeshBaker = new SBG_SlowIterator(function(inst) {
 	var currBrick = inst.bricks[inst.currI];
-	var currBuf = GenInstGeom[currBrick.IntRef];
+	var intref = currBrick.IntRef;
+	var doSideWedgeRot = false;
+	var tsca = currBrick.BoundingBox.clone();
+	if(intref == "SideWedge") {
+		doSideWedgeRot = true;
+		intref = "Wedge";
+		var tz = tsca.z;
+		tsca.z = tsca.x*3;
+		tsca.x = tz/3;
+	}
+			
+	var currBuf = GenInstGeom[intref];
 	var currBufPos = currBuf.maxInstancedCount;
 	
 	var tmtx = new THREE.Matrix4();
@@ -388,6 +439,10 @@ var SBG_SI_MeshBaker = new SBG_SlowIterator(function(inst) {
 			break;
 	}
 	tmtx.multiply(new THREE.Matrix4().makeRotationZ((2-currBrick.RotationIndex)*3.14159265/2));
+	if(doSideWedgeRot) {
+		tmtx.multiply(new THREE.Matrix4().makeRotationY(-3.14159265/2));
+		
+	}
 	
 	var ii = 0;
 	var atr0 = currBuf.getAttribute('aInstanceMatrix0');
@@ -419,20 +474,21 @@ var SBG_SI_MeshBaker = new SBG_SlowIterator(function(inst) {
 	
 	var atrs = currBuf.getAttribute('aInstanceScale');
 	
-	atrs.setX(currBufPos, currBrick.BoundingBox.x);
-	atrs.setY(currBufPos, currBrick.BoundingBox.y);
-	atrs.setZ(currBufPos, currBrick.BoundingBox.z/3);
+	atrs.setX(currBufPos, tsca.x);
+	atrs.setY(currBufPos, tsca.y);
+	atrs.setZ(currBufPos, tsca.z/3);
 	
 	currBuf.maxInstancedCount++;
 	
 	
 	//calculation for bbox display
-	var lx = currBrick.Position.x - currBrick.BoundingBox.x/2;
-	var ux = currBrick.Position.x + currBrick.BoundingBox.x/2;
-	var ly = currBrick.Position.y - currBrick.BoundingBox.y/2;
-	var uy = currBrick.Position.y + currBrick.BoundingBox.y/2;
-	var lz = currBrick.Position.z - currBrick.BoundingBox.z/2;
-	var uz = currBrick.Position.z + currBrick.BoundingBox.z/2;
+	//TODO: this may not take rotation/orientation into account
+	var lx = currBrick.Position.x - tsca.x/2;
+	var ux = currBrick.Position.x + tsca.x/2;
+	var ly = currBrick.Position.y - tsca.y/2;
+	var uy = currBrick.Position.y + tsca.y/2;
+	var lz = currBrick.Position.z - tsca.z/2;
+	var uz = currBrick.Position.z + tsca.z/2;
 	if(lx < inst.bbox[0]) inst.bbox[0] = lx;
 	if(ly < inst.bbox[1]) inst.bbox[1] = ly;
 	if(lz < inst.bbox[2]) inst.bbox[2] = lz;

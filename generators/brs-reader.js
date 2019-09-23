@@ -75,6 +75,12 @@ var NewGen = new StagedBrickGenerator(GenName, [{apply: function(inst, promise) 
 			bsize.z = 1;
 			bmatch = "Round";
 			break;
+		case "PB_DefaultSideWedge":
+			bmatch = "SideWedge";
+			break;
+		case "PB_DefaultWedge":
+			bmatch = "Wedge";
+			break;
 		case "PB_DefaultRampCorner":
 			bmatch = "RampCorner";
 			break;
