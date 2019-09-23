@@ -67,6 +67,13 @@ var NewGen = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(function(in
 	}
 	else nb.color = colorind;
 	
+	
+	//temporarily override owner index to 1 and owners array to empty
+	//TODO: brsjs seems to be causing this but i'm not sure
+	nb.owner_index = 1;
+	
+	
+	
 	nb.direction = tb.FacingIndex;
 	
 	if(typeof tb.BrsData.IsProcedural === "undefined" || tb.BrsData.IsProcedural) { //TODO: make generators set this
@@ -121,10 +128,15 @@ var NewGen = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(function(in
 		inst.maxI = inst.bricks.length;
 	},
 	OnFinalize: function(inst) {
+		inst.brsdata.brick_owners = [{
+			id: 'ffffffff-ffff-ffff-ffff-ffffffffffff',
+			name: 'PUBLIC'
+		}];
+		console.log(inst.brsdata);
 		var nbd = BRS.write(inst.brsdata);
 		BlobDownload("generated.brs", [nbd], "octet/stream");
 	},
-	Description: "Saves bricks to a Brickadia save file (.BRS). Will retain information from BrsReader!"
+	Description: "Saves bricks to a Brickadia save file (.BRS). Will retain information from BrsReader!<br><span class='warntri'></span><b>WARNING:</b> May generate bad owner information due to a bug. Only generates public bricks for now; for maximum safety, do not use the 'Load With Ownership' load option ingame."
 });
 
 RegisterGenerator(NewGen, GenDisplayName, GenName, GenCategory);
