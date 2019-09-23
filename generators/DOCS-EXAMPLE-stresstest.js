@@ -64,10 +64,7 @@ var NewGen = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(function(in
 		return "StressTesting... " + Math.floor(inst.Iter/inst.MaxIter*100) + "%";
 	}
 	//OnStageSetup: function(inst): called before the first call to the iterator, but after the SBG's own setup or the finalization of a previous stage. Defaults to an empty function.
-	//OnStageFinalize: function(inst, errorCode): called after the last call to the iterator, but before the SBG's own finalization or the setup of a subsequent stage. Defaults to an empty function. If errorCode is defined, it will have one of these values (you'll have to handle throwing these errors yourself if you define a custom stage handler instead of using SBG_SlowIterator):
-	//	TooManyBricks: Generation was stopped early because buffer length exceeded a BrickCountCap flag set by the caller.
-	//	UserCancel: Generation was stopped by an external source using someBrickGenerator.stop(promise).
-	//	GenCancel: The generator code threw a pseudo-exception by setting inst.abort to any non-undefined value.
+	//OnStageFinalize: function(inst): called after the last call to the iterator, but before the SBG's own finalization or the setup of a subsequent stage. Defaults to an empty function.
 })], { //The following are all optional parameters provided for the StagedBrickGenerator.
 	StatusText: "StressTesting...", //Initial text that will appear in the status popup, and stay there if you don't change it with SBG_SlowIterator's onStagePause (or manually). Defaults to the generator's name.
 	Description: "Generates lots of bricks real damn fast... to help with testing stress. Also serves as documentation/help for the StagedBrickGenerator class!", //Unused in this app (for now). Defaults to "I generate bricks."

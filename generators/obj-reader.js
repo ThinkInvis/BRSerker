@@ -21,13 +21,15 @@ var RecursiveUnpackObj = function(obj, arr = [], vis = []) {
 var NewGen = new StagedBrickGenerator(GenName, [
 	{apply: function(inst, promise) {
 		if(inst._statusEnabled)
-			inst._ticket.Text = "Waiting for file read...";
+			inst._ticket.Text = "Waiting for file read: OBJ" + (inst.noMtl ? "" : ", MTL") + "...";
 		
 		var p1 = $.Deferred();
 		var p2 = $.Deferred();
 		
 		var reader = new FileReader();
 		reader.onload = function(e) {
+			if(inst._statusEnabled)
+				inst._ticket.Text = "Waiting for file read: MTL...";
 			p1.resolve(this.result);
 		}
 		reader.readAsText(inst.fileName, "ISO-8859-1");
@@ -37,19 +39,39 @@ var NewGen = new StagedBrickGenerator(GenName, [
 		else {
 			var mtlreader = new FileReader();
 			mtlreader.onload = function(e) {
+			if(inst._statusEnabled)
+				inst._ticket.Text = "Waiting for file read: OBJ...";
 				p2.resolve(this.result);
 			}
 			mtlreader.readAsText(inst.mtlFileName, "ISO-8859-1");
 		}
 		
 		$.when(p1, p2).done(function(objtxt,mtltxt) {
+			if(inst._statusEnabled)
+				inst._ticket.Text = "Parsing files...";
 			var objldr = new THREE.OBJLoader();
 			if(!inst.noMtl) {
 				var mtlldr = new THREE.MTLLoader();
-				var mtldata = mtlldr.parse(mtltxt);
+				var mtldata;
+				try {
+					mtldata = mtlldr.parse(mtltxt);
+				} catch(ex) {
+					inst.abort = "Error in MTLLoader: " + ex;
+					inst.abortFatal = true;
+					promise.resolve(inst);
+					return;
+				}
 				objldr.setMaterials(mtldata);
 			}
-			var objdata = objldr.parse(objtxt);
+			var objdata;
+			try {
+				objdata = objldr.parse(objtxt);
+			} catch(ex) {
+				inst.abort = "Error in OBJLoader: " + ex;
+				inst.abortFatal = true;
+				promise.resolve(inst);
+				return;
+			}
 			
 			inst.geoms = RecursiveUnpackObj(objdata);
 			inst.geoms[0].computeBoundingBox();

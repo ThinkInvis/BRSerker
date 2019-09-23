@@ -9,11 +9,13 @@ var NewGen = new StagedBrickGenerator(GenName, [{apply: function(inst, promise) 
 		
 		if(lines[0] != "This is a Blockland save file.  You probably shouldn't modify it cause you'll screw it up.") {
 			inst.abort = "Header missing";
+			inst.abortFatal = true;
 			promise.resolve(inst);
 			return;
 		}
 		if(lines.length < 67) {
 			inst.abort = "File is truncated";
+			inst.abortFatal = true;
 			promise.resolve(inst);
 			return;
 		}
@@ -21,17 +23,20 @@ var NewGen = new StagedBrickGenerator(GenName, [{apply: function(inst, promise) 
 		var numDescrLines = lines[1]*1;
 		if(lines.length <= 66+numDescrLines) {
 			inst.abort = "File is truncated";
+			inst.abortFatal = true;
 			promise.resolve(inst);
 			return;
 		}
 		var sspl = lines[66+numDescrLines].split(" ");
 		if(sspl[0] != "Linecount") {
 			inst.abort = "Linecount not in expected spot";
+			inst.abortFatal = true;
 			promise.resolve(inst);
 			return;
 		}
 		if(sspl[1] * 1 < 1) {
 			inst.abort = "No bricks to load";
+			inst.abortFatal = true;
 			promise.resolve(inst);
 			return;
 		}

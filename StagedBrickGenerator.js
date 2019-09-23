@@ -21,19 +21,8 @@ class SBG_SlowIterator {
 		this._genSetupDone(inst, promise);
 	}
 	_genSetupDone(inst, promise) {
-		var masterEstopMsg;
-		if(typeof inst._stageIndex === "undefined") masterEstopMsg = "Emergency stop! ";
-		else masterEstopMsg = "Stage " + inst._stageIndex + " e-stop! ";
-		
 		if(typeof inst.abort !== "undefined") {
-			promise.resolve();
-			if(inst._statusEnabled)
-				new StatusTicket(inst._statusContainer, {
-					initText: masterEstopMsg + "Internal: " + inst.abort,
-					bgColor: "ff0000",
-					iconClass: "warntri",
-					timeout: 15000
-				});
+			promise.resolve(inst);
 			return;
 		}
 		
@@ -42,41 +31,19 @@ class SBG_SlowIterator {
 				var tAccum = 0;
 				while(tAccum < self.maxExecTime) {
 					var t0 = window.performance.now();
-					var masterEstopMsg;
-					if(typeof inst._stageIndex === "undefined") masterEstopMsg = "Emergency stop! ";
-					else masterEstopMsg = "Stage " + inst._stageIndex + " e-stop! ";
 					for(var i = 0; i < self.batching; i++) {
 						if(inst._brickCountCap > -1 && inst.brickBuffer.length > inst._brickCountCap) {
-							if(inst._statusEnabled)
-								new StatusTicket(inst._statusContainer, {
-									initText: masterEstopMsg + "Too many bricks.",
-									bgColor: "ff0000",
-									iconClass: "warntri",
-									timeout: 15000
-								});
-							self._genFinalize(inst, promise, "TooManyBricks");
-							return;
+							inst.abort = "Too many bricks.";
+							while(inst.brickBuffer.length > inst._brickCountCap) {
+								inst.brickBuffer.pop();
+							}
+							//inst.abortFatal = true;
 						} else if(inst._extCancel) {
-							if(inst._statusEnabled)
-								new StatusTicket(inst._statusContainer, {
-									initText: masterEstopMsg + "Cancelled by external source.",
-									bgColor: "ff0000",
-									iconClass: "warntri",
-									timeout: 15000
-								});
-							self._genFinalize(inst, promise, "UserCancel");
-							return;
-						} else if(typeof inst.abort !== "undefined") {
-							if(inst._statusEnabled)
-								new StatusTicket(inst._statusContainer, {
-									initText: masterEstopMsg + "e-stop! Internal: " + inst.abort,
-									bgColor: "ff0000",
-									iconClass: "warntri",
-									timeout: 15000
-								});
-							self._genFinalize(inst, promise, "GenCancel");
-							return;
-						} else if(self.genStep(inst)) {
+							inst.abort = "Cancelled by external source.";
+							inst.abortFatal = inst._extCancelFatal == true;
+						}
+						
+						if(typeof inst.abort !== "undefined" || self.genStep(inst)) {
 							self._genFinalize(inst, promise);
 							return;
 						}
@@ -90,9 +57,9 @@ class SBG_SlowIterator {
 		})(this), this.runSpeed);
 	}
 	
-	_genFinalize(inst, promise, errorCode) {
+	_genFinalize(inst, promise) {
 		clearInterval(inst._stageStepper);
-		this.genFinalize(inst, errorCode);
+		this.genFinalize(inst);
 		promise.resolve(inst);
 	}
 }
@@ -149,21 +116,21 @@ class StagedBrickGenerator {
 		this.genSetupVars(inst);
 		this._genSetupDone(inst);
 		
-		if(typeof inst.abort !== "undefined") {
-			if(inst._statusEnabled)
-				new StatusTicket(StatusContainer, {
-					initText: "Setup failed! Internal: " + inst.abort,
-					bgColor: "ff0000",
-					iconClass: "warntri",
-					timeout: 15000
-				});
-			this._genFinalize(inst);
-		}
 		return inst._promise;
 	}
 	_genSetupDone(inst, args) {
-		if(typeof inst.abort !== "undefined")
+		if(typeof inst.abort !== "undefined") {
+			if(inst._statusEnabled)
+				//entire-generator setup errors are always fatal
+				new StatusTicket(inst._statusContainer, {
+					initText: "Setup FATAL ERROR: " + inst.abort,
+					bgColor: "ff0000",
+					iconClass: "fatalX",
+					timeout: 15000
+				});
+			this._genFinalize(inst);
 			return;
+		}
 		
 		var self = this;
 		
@@ -175,7 +142,21 @@ class StagedBrickGenerator {
 		for(var i = 0; i < this.genStages.length-1; i++) {
 			$.when(inst._stagePromises[i]).done(function(sinst) {
 				sinst._stageIndex++;
-				//if(inst.abortFatal || inst._extCancelFatal) {  //TODO
+				
+				if(typeof sinst.abort !== "undefined") {
+					if(sinst._statusEnabled)
+						new StatusTicket(sinst._statusContainer, {
+							initText: "Stage " + sinst._stageIndex + (sinst.abortFatal ? " FATAL ERROR: \"" : " error: \"") + sinst.abort + "\"",
+							bgColor: sinst.abortFatal ? "ff0000" : "aa3333",
+							iconClass: sinst.abortFatal ? "fatalX" : "warntri",
+							timeout: 15000
+						});
+					if(sinst.abortFatal == true) {
+						self._genFinalize(sinst);
+						return;
+					}
+				}
+				//if(inst._extCancelFatal) {  //TODO
 					
 				//}
 				self.genStages[sinst._stageIndex].apply(sinst, sinst._stagePromises[sinst._stageIndex]);
@@ -191,7 +172,7 @@ class StagedBrickGenerator {
 	_genFinalize(inst) {
 		if(inst._statusEnabled)
 			inst._ticket.close();
-		inst._promise.resolve(inst.brickBuffer);
+		inst._promise.resolve(inst.brickBuffer); //TODO: consider resolving with undefined or an error code if abortFatal?
 		var ioinst = this._instances.indexOf(inst);
 		if(ioinst > -1)
 			this._instances.splice(ioinst, 1);

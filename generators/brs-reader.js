@@ -8,16 +8,19 @@ var NewGen = new StagedBrickGenerator(GenName, [{apply: function(inst, promise) 
 			inst.brsdata = BRS.read(new Uint8Array(buffer));
 		} catch(ex) {
 			inst.abort = "Exception in brs-js: " + ex;
+			inst.abortFatal = true;
 			promise.resolve(inst);
 			return;
 		}
 		if(inst.brsdata.version != 4) {
 			inst.abort = "Wrong BRS version (expected 4, got " + inst.brsdata.version + ")";
+			inst.abortFatal = true;
 			promise.resolve(inst);
 			return;
 		}
 		if(inst.brsdata.bricks.length == 0) {
 			inst.abort = "Save is empty";
+			inst.abortFatal = true;
 			promise.resolve(inst);
 			return;
 		}
