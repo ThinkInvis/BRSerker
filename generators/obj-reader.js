@@ -32,17 +32,23 @@ var NewGen = new StagedBrickGenerator(GenName, [
 		}
 		reader.readAsText(inst.fileName, "ISO-8859-1");
 		
-		var mtlreader = new FileReader();
-		mtlreader.onload = function(e) {
-			p2.resolve(this.result);
+		if(inst.noMtl)
+			p2.resolve();
+		else {
+			var mtlreader = new FileReader();
+			mtlreader.onload = function(e) {
+				p2.resolve(this.result);
+			}
+			mtlreader.readAsText(inst.mtlFileName, "ISO-8859-1");
 		}
-		mtlreader.readAsText(inst.mtlFileName, "ISO-8859-1");
 		
 		$.when(p1, p2).done(function(objtxt,mtltxt) {
-			var mtlldr = new THREE.MTLLoader();
-			var mtldata = mtlldr.parse(mtltxt);
 			var objldr = new THREE.OBJLoader();
-			objldr.setMaterials(mtldata);
+			if(!inst.noMtl) {
+				var mtlldr = new THREE.MTLLoader();
+				var mtldata = mtlldr.parse(mtltxt);
+				objldr.setMaterials(mtldata);
+			}
 			var objdata = objldr.parse(objtxt);
 			
 			inst.geoms = RecursiveUnpackObj(objdata);
@@ -61,7 +67,7 @@ var NewGen = new StagedBrickGenerator(GenName, [
 		var fc = inst.geoms[inst.currI].faces[inst.currT];
 		
 		var color = inst.baseColor;
-		if(typeof inst.geoms[inst.currI].material !== "undefined") {
+		if(!inst.noMtl && typeof inst.geoms[inst.currI].material !== "undefined") {
 			var fcMtl = inst.geoms[inst.currI].material[fc.materialIndex];
 			if(typeof fcMtl !== "undefined" && typeof fcMtl.color !== "undefined")
 				color = [fcMtl.color.r, fcMtl.color.g, fcMtl.color.b, 1.0];
@@ -160,8 +166,7 @@ var NewGen = new StagedBrickGenerator(GenName, [
 			return;
 		}
 		if(this.controls.MtlReader.get(0).files.length < 1) {
-			inst.abort = "No MTL file loaded";
-			return;
+			inst.noMtl = true;
 		}
 		
 		inst.baseColor = [this.controls.ColorR.val()*1, this.controls.ColorG.val()*1, this.controls.ColorB.val()*1, 1.0];
