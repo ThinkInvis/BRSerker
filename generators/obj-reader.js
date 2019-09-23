@@ -92,11 +92,11 @@ var NewGen = new StagedBrickGenerator(GenName, [
 		if(!inst.noMtl && typeof inst.geoms[inst.currI].material !== "undefined") {
 			var fcMtl = inst.geoms[inst.currI].material[fc.materialIndex];
 			if(typeof fcMtl !== "undefined" && typeof fcMtl.color !== "undefined")
-				color = [fcMtl.color.r, fcMtl.color.g, fcMtl.color.b, 1.0];
+				color = [fcMtl.color.r, fcMtl.color.g, fcMtl.color.b, 1.0, inst.baseColor[4], inst.baseColor[5]];
 			else {
 				fcMtl = inst.geoms[inst.currI].material;
 				if(typeof fcMtl !== "undefined" && typeof fcMtl.color !== "undefined")
-					color = [fcMtl.color.r, fcMtl.color.g, fcMtl.color.b, 1.0];
+					color = [fcMtl.color.r, fcMtl.color.g, fcMtl.color.b, 1.0, inst.baseColor[4], inst.baseColor[5]];
 				
 			}
 		}
@@ -189,7 +189,7 @@ var NewGen = new StagedBrickGenerator(GenName, [
 			inst.noMtl = true;
 		}
 		
-		inst.baseColor = [this.controls.ColorR.val()*1, this.controls.ColorG.val()*1, this.controls.ColorB.val()*1, 1.0];
+		inst.baseColor = [this.controls.ColorR.val()*1, this.controls.ColorG.val()*1, this.controls.ColorB.val()*1, 1.0, 0, "Basic"];
 		inst.res = this.controls.Res.val()*1;
 		inst.fileName = this.controls.Reader.get(0).files[0];
 		inst.mtlFileName = this.controls.MtlReader.get(0).files[0];

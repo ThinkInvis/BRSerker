@@ -325,8 +325,100 @@ var NewGen = new StagedBrickGenerator(GenName, [
 			return "Carving caves... " + Math.floor(inst.currY/inst.maxY*100) + "%";
 		}
 	}),
-///// STAGE 6: Octree Minimization
-	SBGSI_OctreeVoxels], {
+///// STAGE 7: Wedgify
+	new SBG_SlowIterator(function(inst) {
+		if(!inst.doWedges) return true;
+		var currHeight = Math.floor(inst.heightmap[inst.currX][inst.currY]);
+		
+		var cap = Math.min(inst.maxZ, currHeight+inst.grassDepth);
+		
+		for(var k = 0; k < cap; k++) {
+			var currVox = inst.vox[inst.currX][inst.currY][k];
+			if(currVox == "skip") continue;
+			
+			//this should absolutely work right but it doesn't
+			//this code is haunted :(
+			
+			var nbMM = inst.vox[inst.currX-1][inst.currY-1][k];
+			var nbZM = inst.vox[inst.currX][inst.currY-1][k];
+			var nbPM = inst.vox[inst.currX+1][inst.currY-1][k];
+			var nbMZ = inst.vox[inst.currX-1][inst.currY][k];
+			var nbPZ = inst.vox[inst.currX+1][inst.currY][k];
+			var nbMP = inst.vox[inst.currX-1][inst.currY+1][k];
+			var nbZP = inst.vox[inst.currX][inst.currY+1][k];
+			var nbPP = inst.vox[inst.currX+1][inst.currY+1][k];
+			
+			//y
+			//P
+			//Z#\
+			//M##
+			// MZPx
+			if(nbMP == "skip" && nbZP == "skip" && nbPP == "skip"
+			&& nbMZ != "skip" &&                   nbPZ == "skip"
+			&& nbMM != "skip" && nbZM != "skip" && nbPM == "skip") {
+				currVox[4] = 0;
+				currVox[5] = "SideWedge";
+			}
+			
+			//y
+			//P
+			//Z /#
+			//M ##
+			// MZPx
+			if(nbMP == "skip" && nbZP == "skip" && nbPP == "skip"
+			&& nbMZ == "skip" &&                   nbPZ != "skip"
+			&& nbMM == "skip" && nbZM != "skip" && nbPM != "skip") {
+				currVox[4] = 1;
+				currVox[5] = "SideWedge";
+			}
+			
+			//y
+			//P ##
+			//Z \#
+			//M
+			// MZPx
+			if(nbMP == "skip" && nbZP != "skip" && nbPP != "skip"
+			&& nbMZ == "skip" &&                   nbPZ != "skip"
+			&& nbMM == "skip" && nbZM == "skip" && nbPM == "skip") {
+				currVox[4] = 2;
+				currVox[5] = "SideWedge";
+			}
+			
+			//y
+			//P##
+			//Z#/
+			//M
+			// MZPx
+			if(nbMP != "skip" && nbZP != "skip" && nbPP == "skip"
+			&& nbMZ != "skip" &&                   nbPZ == "skip"
+			&& nbMM == "skip" && nbZM == "skip" && nbPM == "skip") {
+				currVox[4] = 3;
+				currVox[5] = "SideWedge";
+			}
+		}
+			
+		inst.currX++;
+		if(inst.currX >= inst.maxX-1) {
+			inst.currX = 1;
+			inst.currY++;
+		}
+		return inst.currY >= inst.maxY-1;
+	},{
+		RunSpeed: 50,
+		MaxExecTime: 40,
+		Batching: 100,
+		OnStageSetup: function(inst) {
+			if(!inst.doWedges) return;
+			inst.currX = 1;
+			inst.currY = 1;
+		},
+		OnStagePause: function(inst) {
+			return "Wedgifying... " + Math.floor(inst.currY/inst.maxY*100) + "%";
+		}
+	}),
+///// STAGE 8: Octree Minimization
+	SBGSI_OctreeVoxels
+], {
 	Controls: (function() {
 		var cObj = {};
 		cObj.HelpLabel = $("<span>", {"text":"Mouseover an option box for help with that option."});
@@ -424,7 +516,9 @@ var NewGen = new StagedBrickGenerator(GenName, [
 		
 		cObj.VoxelOpts = {
 			ModeLabel: $("<span>", {"class":"opt-1-2","text":"Irregular splits:"}),
-			Mode: $("<span>", {"class":"opt-1-2 cb-container opt-input", "html":"&nbsp;"}).append($("<input>", {"type":"checkbox","checked":true}))
+			Mode: $("<span>", {"class":"opt-1-2 cb-container opt-input", "html":"&nbsp;"}).append($("<input>", {"type":"checkbox","checked":true}))/*,
+			WedgeLabel: $("<span>", {"class":"opt-1-2","text":"Wedges:"}),
+			Wedge: $("<select class='opt-1-2 opt-input'><option value='none'>None</option><option value='h' selected>Horizontal</option><option value='v' disabled='disabled'>Vertical (NYI)</option></select>")*/
 		};
 		cObj.VoxelMaster = $("<button>", {"class":"opt-1-1","text":"Show/Hide: Voxelization Options"});
 		cObj.VoxelContainer = $("<div>", {"class":"controls-subsubpanel","style":"display:none;"});
@@ -467,8 +561,8 @@ var NewGen = new StagedBrickGenerator(GenName, [
 		inst.maxY = this.controls.NoiseOpts.SizeY.val()*1;
 		inst.maxZ = this.controls.NoiseOpts.SizeZ.val()*1;
 		
-		inst.mainColor = [this.controls.BrickOpts.ColorR.val()*1, this.controls.BrickOpts.ColorG.val()*1, this.controls.BrickOpts.ColorB.val()*1, 1.0];
-		inst.grassColor = [this.controls.BrickOpts.GColorR.val()*1, this.controls.BrickOpts.GColorG.val()*1, this.controls.BrickOpts.GColorB.val()*1, 1.0];
+		inst.mainColor = [this.controls.BrickOpts.ColorR.val()*1, this.controls.BrickOpts.ColorG.val()*1, this.controls.BrickOpts.ColorB.val()*1, 1.0, 0, "Basic"];
+		inst.grassColor = [this.controls.BrickOpts.GColorR.val()*1, this.controls.BrickOpts.GColorG.val()*1, this.controls.BrickOpts.GColorB.val()*1, 1.0, 0, "Basic"];
 		inst.grassDepth = this.controls.LayerOpts.GrassDepth.val()*1;
 		inst.skinDepth = this.controls.LayerOpts.MaxDepth.val()*1;
 		inst.cavePatchDepth = this.controls.CavesOpts.CavePatchDepth.val()*1;
@@ -476,6 +570,9 @@ var NewGen = new StagedBrickGenerator(GenName, [
 		inst.posX = this.controls.NoiseOpts.SeedPosX.val()*1;
 		inst.posY = this.controls.NoiseOpts.SeedPosY.val()*1;
 		inst.posZ = this.controls.NoiseOpts.SeedPosZ.val()*1;
+		
+		//inst.doWedges = this.controls.VoxelOpts.Wedge.val() == "h";
+		inst.doWedges = false;
 		
 		inst.hNoiseOctaves = this.controls.NoiseOpts.Octaves.val()*1;
 		inst.hNoisePersistence = this.controls.NoiseOpts.Persistence.val()*1;

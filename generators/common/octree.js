@@ -1,4 +1,4 @@
-//Expects 'inst.vox' to be a 3D array whose values are each either an RGBA color array (full cell with that color) or the string "skip" (empty cell)
+//Expects 'inst.vox' to be a 3D array whose values are each either an RGBA+bricktype+brickrot array (full cell with that color and bricktype/rotation) or the string "skip" (empty cell)
 //Expects 'inst.maxX', 'inst.maxY', 'inst.maxZ' to be set to the bounds of inst.vox (allows for some out-of-bounds data to be set in previous stages)
 //If 'inst.octreeIrregular' is set to 'true', splits can happen anywhere (can be more efficient than center); otherwise, splits only happen directly at the center of the leaf
 //If 'inst.octreeSizeLimit' is not undefined, expects it to be an array containing the inclusive maximum X, Y, and Z size for one brick. Otherwise, this limit is not used.
@@ -21,7 +21,7 @@ var SBGSI_OctreeVoxels = new SBG_SlowIterator(function(inst) {
 		  ||(leaf.maxY-leaf.minY > inst.octreeSizeLimit[1]/inst.octreeScale[1])
 		  ||(leaf.maxZ-leaf.minZ > inst.octreeSizeLimit[2]/inst.octreeScale[2])
 		   ));
-		if(((c1 != "skip" || c2 != "skip") && (c1[0] != c2[0] || c1[1] != c2[1] || c1[2] != c2[2]))
+		if(((c1 != "skip" || c2 != "skip") && (c1[0] != c2[0] || c1[1] != c2[1] || c1[2] != c2[2] || c1[4] != c2[4] || c1[5] != c2[5]))
 	     || isTooBig) {
 			//color mismatch or brick is too big, split the leaf and restart (todo: can we just resume instead?)
 			//todo: is running size check in a second pass better? seems like current approach splits things up early, but that may be beneficial sometimes
@@ -30,7 +30,7 @@ var SBGSI_OctreeVoxels = new SBG_SlowIterator(function(inst) {
 			var z0 = leaf.minZ;
 			var x2 = leaf.maxX;
 			var y2 = leaf.maxY;
-			var z2 = leaf.maxZ
+			var z2 = leaf.maxZ;
 			
 			var x1, y1, z1;
 			if(inst.octreeIrregular && !isTooBig) {
@@ -89,11 +89,11 @@ var SBGSI_OctreeVoxels = new SBG_SlowIterator(function(inst) {
 		inst.brickBuffer.push(new InternalBrick(
 			brickSize,
 			brickPos,
-			0,
+			leaf.refV[4],
 			new THREE.Color(leaf.refV[0], leaf.refV[1], leaf.refV[2], leaf.refV[3]),
 			0,
 			{
-				InternalName: "Basic"
+				InternalName: leaf.refV[5]
 			}
 		).AutoOffset());
 	}
