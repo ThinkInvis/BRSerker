@@ -6,8 +6,8 @@ var RecursiveUnpackObj = function(obj, arr = [], vis = []) {
 	//not sure if circular references can even happen here but better safe than sorry
 	if(!vis.includes(obj)) {
 		vis.push(obj);
-	
 		if(typeof obj.geometry !== "undefined") arr.push(new THREE.Geometry().fromBufferGeometry(obj.geometry));
+		if(typeof obj.material !== "undefined") arr[arr.length-1].material = obj.material;
 		if(obj.children.length > 0) {
 			for(var i = 0; i < obj.children.length; i++) {
 				RecursiveUnpackObj(obj.children[i], arr, vis);
@@ -22,12 +22,29 @@ var NewGen = new StagedBrickGenerator(GenName, [
 	{apply: function(inst, promise) {
 		if(inst._statusEnabled)
 			inst._ticket.Text = "Waiting for file read...";
+		
+		var p1 = $.Deferred();
+		var p2 = $.Deferred();
+		
 		var reader = new FileReader();
 		reader.onload = function(e) {
-			if(inst._statusEnabled)
-				inst._ticket.Text = "Loading OBJ...";
-			var objdata = new THREE.OBJLoader().parse(this.result);
-			console.log(objdata);
+			p1.resolve(this.result);
+		}
+		reader.readAsText(inst.fileName, "ISO-8859-1");
+		
+		var mtlreader = new FileReader();
+		mtlreader.onload = function(e) {
+			p2.resolve(this.result);
+		}
+		mtlreader.readAsText(inst.mtlFileName, "ISO-8859-1");
+		
+		$.when(p1, p2).done(function(objtxt,mtltxt) {
+			var mtlldr = new THREE.MTLLoader();
+			var mtldata = mtlldr.parse(mtltxt);
+			var objldr = new THREE.OBJLoader();
+			objldr.setMaterials(mtldata);
+			var objdata = objldr.parse(objtxt);
+			
 			inst.geoms = RecursiveUnpackObj(objdata);
 			inst.geoms[0].computeBoundingBox();
 			inst.bbox = inst.geoms[0].boundingBox.clone();
@@ -38,11 +55,24 @@ var NewGen = new StagedBrickGenerator(GenName, [
 			inst.bsize = inst.bbox.max.clone().sub(inst.bbox.min);
 			inst.bmax = Math.max(inst.bsize.x, inst.bsize.y, inst.bsize.z);
 			promise.resolve(inst);
-		}
-		reader.readAsText(inst.fileName, "ISO-8859-1");
+		});
 	}},
 	new SBG_SlowIterator(function(inst) {
 		var fc = inst.geoms[inst.currI].faces[inst.currT];
+		
+		var color = inst.baseColor;
+		if(typeof inst.geoms[inst.currI].material !== "undefined") {
+			var fcMtl = inst.geoms[inst.currI].material[fc.materialIndex];
+			if(typeof fcMtl !== "undefined" && typeof fcMtl.color !== "undefined")
+				color = [fcMtl.color.r, fcMtl.color.g, fcMtl.color.b, 1.0];
+			else {
+				fcMtl = inst.geoms[inst.currI].material;
+				if(typeof fcMtl !== "undefined" && typeof fcMtl.color !== "undefined")
+					color = [fcMtl.color.r, fcMtl.color.g, fcMtl.color.b, 1.0];
+				
+			}
+		}
+		
 		var ptA = inst.geoms[inst.currI].vertices[fc.a].clone()
 			.sub(inst.bbox.min).multiplyScalar(inst.res/inst.bmax);
 		var ptB = inst.geoms[inst.currI].vertices[fc.b].clone()
@@ -52,8 +82,8 @@ var NewGen = new StagedBrickGenerator(GenName, [
 		
 		var ptTri = new THREE.Triangle(ptA, ptB, ptC);
 		
-		var ptMin = ptA.clone().min(ptB).min(ptC).floor();
-		var ptMax = ptA.clone().max(ptB).max(ptC).ceil();
+		var ptMin = ptA.clone().min(ptB).min(ptC).max(new THREE.Vector3(0,0,0)).floor();
+		var ptMax = ptA.clone().max(ptB).max(ptC).min(new THREE.Vector3(inst.maxX-1,inst.maxY-1,inst.maxZ-1)).ceil();
 		
 		//todo: better algorithm
 		//maybe here
@@ -66,7 +96,7 @@ var NewGen = new StagedBrickGenerator(GenName, [
 						new THREE.Vector3(i+1,j+1,k+1)
 					);
 					if(ibox.intersectsTriangle(ptTri))
-						inst.vox[i][j][k] = inst.baseColor;
+						inst.vox[i][j][k] = color;
 						//also todo: load material colors, determine which to use based on the most polygon area of that material contained within the voxel?
 				}
 			}
@@ -113,7 +143,10 @@ var NewGen = new StagedBrickGenerator(GenName, [
 	SBGSI_OctreeVoxels
 ], {
 	Controls: {
-		Reader: $("<input>", {"type":"file", "class":"opt-1-1", "accept":".obj", "height":"20"}),
+		ReaderLabel: $("<span class='opt-1-4'>.OBJ:</span>"),
+		Reader: $("<input>", {"type":"file", "class":"opt-3-4", "accept":".obj", "height":"20"}),
+		MtlReaderLabel: $("<span class='opt-1-4'>.MTL:</span>"),
+		MtlReader: $("<input>", {"type":"file", "class":"opt-3-4", "accept":".mtl", "height":"20"}),
 		ResLabel: $("<span class='opt-1-2'>Resolution:</span>"),
 		Res: $("<input>", {"type": "number", "min": 1, "max": 512, "value": 64, "step": 1, "class": "opt-1-2 opt-input"}),
 		ColorLabel: $("<span>", {"class":"opt-1-4","text":"Color:"}),
@@ -123,13 +156,18 @@ var NewGen = new StagedBrickGenerator(GenName, [
 	},
 	OnSetup: function(inst) {
 		if(this.controls.Reader.get(0).files.length < 1) {
-			inst.abort = "No file loaded";
+			inst.abort = "No OBJ file loaded";
+			return;
+		}
+		if(this.controls.MtlReader.get(0).files.length < 1) {
+			inst.abort = "No MTL file loaded";
 			return;
 		}
 		
 		inst.baseColor = [this.controls.ColorR.val()*1, this.controls.ColorG.val()*1, this.controls.ColorB.val()*1, 1.0];
 		inst.res = this.controls.Res.val()*1;
 		inst.fileName = this.controls.Reader.get(0).files[0];
+		inst.mtlFileName = this.controls.MtlReader.get(0).files[0];
 		
 		inst.octreeIrregular = true;
 		inst.octreeSizeLimit = [204, 204, 511];
