@@ -27,10 +27,7 @@ var NewGen = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(function(in
 	var ncV = THREE.Math.clamp(inst.VBasis + THREE.Math.randFloat(-inst.VVar/2, inst.VVar/2), 0, 1);
 	//lib/colour.js: converts a 0-1 HSV color to a 0-255 RGB color.
 	var ncRgb = hsvToRgb(ncH, ncS, ncV);
-	//util.js: ColorQuantize takes a 0-1 RGBA color and a list of other such colors, and returns the closest color in the list to the single color. Uses the Delta E 2000 algorithm (very good at judging how similar two colors look to a human).
-	//brsColorsetRGB is the default Brickadia colorset. Also defined: blsColorsetRGB for the Blockland colorset.
-	var ncq = ColorQuantize([ncRgb[0]/255,ncRgb[1]/255,ncRgb[2]/255, 1.0], brsColorsetRGB).Color;
-	var newColor = new THREE.Color(ncq[0], ncq[1], ncq[2]);
+	var newColor = new THREE.Color(ncRgb[0]/255,ncRgb[1]/255,ncRgb[2]/255);
 	
 	//Here's the important part: generate an InternalBrick object...
 	var brk = new InternalBrick(
