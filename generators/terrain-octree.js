@@ -335,9 +335,8 @@ var NewGen = new StagedBrickGenerator(GenName, [
 		for(var k = 0; k < cap; k++) {
 			var currVox = inst.vox[inst.currX][inst.currY][k];
 			if(currVox == "skip") continue;
-			
-			//this should absolutely work right but it doesn't
-			//this code is haunted :(
+			if(inst.grassDepth > 0 && k == currHeight) continue; //don't wedgify grass directly above terrain -- can cause holes in grass
+			//TODO: wedgify bottom grass block IFF underlying terrain is also wedgified in the same direction
 			
 			var nbMM = inst.vox[inst.currX-1][inst.currY-1][k];
 			var nbZM = inst.vox[inst.currX][inst.currY-1][k];
@@ -349,54 +348,46 @@ var NewGen = new StagedBrickGenerator(GenName, [
 			var nbPP = inst.vox[inst.currX+1][inst.currY+1][k];
 			
 			//y
-			//P
+			//P?
 			//Z#\
-			//M##
+			//M##?
 			// MZPx
-			if(nbMP == "skip" && nbZP == "skip" && nbPP == "skip"
+			if(                  nbZP == "skip" && nbPP == "skip"
 			&& nbMZ != "skip" &&                   nbPZ == "skip"
-			&& nbMM != "skip" && nbZM != "skip" && nbPM == "skip") {
-				currVox[4] = 0;
-				currVox[5] = "SideWedge";
-			}
+			&& nbMM != "skip" && nbZM != "skip"                  )
+				inst.vox[inst.currX][inst.currY][k] = [currVox[0], currVox[1], currVox[2], currVox[3], 0, "SideWedge"];
 			
 			//y
-			//P
+			//P  ?
 			//Z /#
-			//M ##
+			//M?##
 			// MZPx
-			if(nbMP == "skip" && nbZP == "skip" && nbPP == "skip"
+			if(nbMP == "skip" && nbZP == "skip"
 			&& nbMZ == "skip" &&                   nbPZ != "skip"
-			&& nbMM == "skip" && nbZM != "skip" && nbPM != "skip") {
-				currVox[4] = 1;
-				currVox[5] = "SideWedge";
-			}
+			                  && nbZM != "skip" && nbPM != "skip")
+				inst.vox[inst.currX][inst.currY][k] = [currVox[0], currVox[1], currVox[2], currVox[3], 3, "SideWedge"];
 			
 			//y
-			//P ##
+			//P?##
 			//Z \#
-			//M
+			//M  ?
 			// MZPx
-			if(nbMP == "skip" && nbZP != "skip" && nbPP != "skip"
+			if(                  nbZP != "skip" && nbPP != "skip"
 			&& nbMZ == "skip" &&                   nbPZ != "skip"
-			&& nbMM == "skip" && nbZM == "skip" && nbPM == "skip") {
-				currVox[4] = 2;
-				currVox[5] = "SideWedge";
-			}
+			&& nbMM == "skip" && nbZM == "skip"                  )
+				inst.vox[inst.currX][inst.currY][k] = [currVox[0], currVox[1], currVox[2], currVox[3], 2, "SideWedge"];
 			
 			//y
-			//P##
+			//P##?
 			//Z#/
-			//M
+			//M?
 			// MZPx
-			if(nbMP != "skip" && nbZP != "skip" && nbPP == "skip"
+			if(nbMP != "skip" && nbZP != "skip"
 			&& nbMZ != "skip" &&                   nbPZ == "skip"
-			&& nbMM == "skip" && nbZM == "skip" && nbPM == "skip") {
-				currVox[4] = 3;
-				currVox[5] = "SideWedge";
-			}
+			                  && nbZM == "skip" && nbPM == "skip")
+				inst.vox[inst.currX][inst.currY][k] = [currVox[0], currVox[1], currVox[2], currVox[3], 1, "SideWedge"];
 		}
-			
+		
 		inst.currX++;
 		if(inst.currX >= inst.maxX-1) {
 			inst.currX = 1;
@@ -516,9 +507,9 @@ var NewGen = new StagedBrickGenerator(GenName, [
 		
 		cObj.VoxelOpts = {
 			ModeLabel: $("<span>", {"class":"opt-1-2","text":"Irregular splits:"}),
-			Mode: $("<span>", {"class":"opt-1-2 cb-container opt-input", "html":"&nbsp;"}).append($("<input>", {"type":"checkbox","checked":true}))/*,
+			Mode: $("<span>", {"class":"opt-1-2 cb-container opt-input", "html":"&nbsp;"}).append($("<input>", {"type":"checkbox","checked":true})),
 			WedgeLabel: $("<span>", {"class":"opt-1-2","text":"Wedges:"}),
-			Wedge: $("<select class='opt-1-2 opt-input'><option value='none'>None</option><option value='h' selected>Horizontal</option><option value='v' disabled='disabled'>Vertical (NYI)</option></select>")*/
+			Wedge: $("<select class='opt-1-2 opt-input'><option value='none' selected>None</option><option value='h'>Horizontal</option><option value='v' disabled='disabled'>Vertical (NYI)</option></select>")
 		};
 		cObj.VoxelMaster = $("<button>", {"class":"opt-1-1","text":"Show/Hide: Voxelization Options"});
 		cObj.VoxelContainer = $("<div>", {"class":"controls-subsubpanel","style":"display:none;"});
@@ -571,8 +562,7 @@ var NewGen = new StagedBrickGenerator(GenName, [
 		inst.posY = this.controls.NoiseOpts.SeedPosY.val()*1;
 		inst.posZ = this.controls.NoiseOpts.SeedPosZ.val()*1;
 		
-		//inst.doWedges = this.controls.VoxelOpts.Wedge.val() == "h";
-		inst.doWedges = false;
+		inst.doWedges = this.controls.VoxelOpts.Wedge.val() == "h";
 		
 		inst.hNoiseOctaves = this.controls.NoiseOpts.Octaves.val()*1;
 		inst.hNoisePersistence = this.controls.NoiseOpts.Persistence.val()*1;
