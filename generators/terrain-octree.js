@@ -335,57 +335,90 @@ var NewGen = new StagedBrickGenerator(GenName, [
 		for(var k = 0; k < cap; k++) {
 			var currVox = inst.vox[inst.currX][inst.currY][k];
 			if(currVox == "skip") continue;
-			if(inst.grassDepth > 0 && k == currHeight) continue; //don't wedgify grass directly above terrain -- can cause holes in grass
-			//TODO: wedgify bottom grass block IFF underlying terrain is also wedgified in the same direction
+			var isMain = k < currHeight;
 			
-			var nbMM = inst.vox[inst.currX-1][inst.currY-1][k];
-			var nbZM = inst.vox[inst.currX][inst.currY-1][k];
-			var nbPM = inst.vox[inst.currX+1][inst.currY-1][k];
-			var nbMZ = inst.vox[inst.currX-1][inst.currY][k];
-			var nbPZ = inst.vox[inst.currX+1][inst.currY][k];
-			var nbMP = inst.vox[inst.currX-1][inst.currY+1][k];
-			var nbZP = inst.vox[inst.currX][inst.currY+1][k];
-			var nbPP = inst.vox[inst.currX+1][inst.currY+1][k];
+			var nbMM = inst.vox[inst.currX-1][inst.currY-1][k] == "skip";
+			var nbZM = inst.vox[inst.currX][inst.currY-1][k] == "skip";
+			var nbPM = inst.vox[inst.currX+1][inst.currY-1][k] == "skip";
+			var nbMZ = inst.vox[inst.currX-1][inst.currY][k] == "skip";
+			var nbPZ = inst.vox[inst.currX+1][inst.currY][k] == "skip";
+			var nbMP = inst.vox[inst.currX-1][inst.currY+1][k] == "skip";
+			var nbZP = inst.vox[inst.currX][inst.currY+1][k] == "skip";
+			var nbPP = inst.vox[inst.currX+1][inst.currY+1][k] == "skip";
+			
+			var nWMM = nbMM || inst.wedgePunch;
+			var nWPM = nbPM || inst.wedgePunch;
+			var nWMP = nbMP || inst.wedgePunch;
+			var nWPP = nbPP || inst.wedgePunch;
+			
+			//remove single outcrops
+			//  e.g. #######
+			//         # ###
+			//            ##
+			//         ^ should be removed because it looks bad near wedges
+			//TODO: remove multiple outcrops (iterate this multiple times in the area if one is found)... or reduce them to two sub-minimum wedges somehow (2x horizontal voxels internally in this stage?)
+			/*if((!nbMP && !nbZP && !nbPP
+			  && nbMZ &&           nbPZ
+			  && nbMM &&  nbZM &&  nbPM)
+			|| (!nbMP &&  nbZP &&  nbPP
+			  &&!nbMZ &&           nbPZ
+			  &&!nbMM &&  nbZM &&  nbPM)
+			|| ( nbMP &&  nbZP &&  nbPP
+			  && nbMZ &&           nbPZ
+			  &&!nbMM && !nbZM && !nbPM)
+			|| ( nbMP &&  nbZP && !nbPP
+			  && nbMZ &&          !nbPZ
+			  && nbMM &&  nbZM && !nbPM)) {
+				  inst.vox[inst.currX][inst.currY][k] = "skip";
+				  continue;
+			  }*/
+			
 			
 			//y
-			//P?
+			//P? A
 			//Z#\
 			//M##?
 			// MZPx
-			if(                  nbZP == "skip" && nbPP == "skip"
-			&& nbMZ != "skip" &&                   nbPZ == "skip"
-			&& nbMM != "skip" && nbZM != "skip"                  )
-				inst.vox[inst.currX][inst.currY][k] = [currVox[0], currVox[1], currVox[2], currVox[3], 0, "SideWedge"];
+			if(          nbZP && nWPP
+			&& !nbMZ &&          nbPZ
+			&& !nbMM && !nbZM        )
+				inst.vox[inst.currX][inst.currY][k] = isMain ? inst.mainColorW0 : inst.grassColorW0;
 			
 			//y
-			//P  ?
+			//PA ?
 			//Z /#
 			//M?##
 			// MZPx
-			if(nbMP == "skip" && nbZP == "skip"
-			&& nbMZ == "skip" &&                   nbPZ != "skip"
-			                  && nbZM != "skip" && nbPM != "skip")
-				inst.vox[inst.currX][inst.currY][k] = [currVox[0], currVox[1], currVox[2], currVox[3], 3, "SideWedge"];
+			if( nWMP && nbZP
+			&&  nbMZ &&         !nbPZ
+			&&         !nbZM && !nbPM)
+				inst.vox[inst.currX][inst.currY][k] = isMain ? inst.mainColorW3 : inst.grassColorW3;
 			
 			//y
 			//P?##
 			//Z \#
-			//M  ?
+			//MA ?
 			// MZPx
-			if(                  nbZP != "skip" && nbPP != "skip"
-			&& nbMZ == "skip" &&                   nbPZ != "skip"
-			&& nbMM == "skip" && nbZM == "skip"                  )
-				inst.vox[inst.currX][inst.currY][k] = [currVox[0], currVox[1], currVox[2], currVox[3], 2, "SideWedge"];
+			if(         !nbZP &&!nbPP
+			&&  nbMZ &&         !nbPZ
+			&&  nWMM &&  nbZM        )
+				inst.vox[inst.currX][inst.currY][k] = isMain ? inst.mainColorW2 : inst.grassColorW2;
 			
 			//y
 			//P##?
 			//Z#/
-			//M?
+			//M? A
 			// MZPx
-			if(nbMP != "skip" && nbZP != "skip"
-			&& nbMZ != "skip" &&                   nbPZ == "skip"
-			                  && nbZM == "skip" && nbPM == "skip")
-				inst.vox[inst.currX][inst.currY][k] = [currVox[0], currVox[1], currVox[2], currVox[3], 1, "SideWedge"];
+			if(!nbMP &&!nbZP
+			&& !nbMZ &&          nbPZ
+			&&          nbZM &&  nWPM)
+				inst.vox[inst.currX][inst.currY][k] = isMain ? inst.mainColorW1 : inst.grassColorW1;
+				
+			
+			//if bottom grass block is wedgified, convert voxel below to unwedgified grass
+			if(inst.grassDepth > 0 && k == currHeight && k > 0) {
+				inst.vox[inst.currX][inst.currY][k-1] = inst.grassColor;
+			}
 		}
 		
 		inst.currX++;
@@ -553,7 +586,17 @@ var NewGen = new StagedBrickGenerator(GenName, [
 		inst.maxZ = this.controls.NoiseOpts.SizeZ.val()*1;
 		
 		inst.mainColor = [this.controls.BrickOpts.ColorR.val()*1, this.controls.BrickOpts.ColorG.val()*1, this.controls.BrickOpts.ColorB.val()*1, 1.0, 0, "Basic"];
+		inst.mainColorW0 = [this.controls.BrickOpts.ColorR.val()*1, this.controls.BrickOpts.ColorG.val()*1, this.controls.BrickOpts.ColorB.val()*1, 1.0, 0, "SideWedge"];
+		inst.mainColorW1 = [this.controls.BrickOpts.ColorR.val()*1, this.controls.BrickOpts.ColorG.val()*1, this.controls.BrickOpts.ColorB.val()*1, 1.0, 1, "SideWedge"];
+		inst.mainColorW2 = [this.controls.BrickOpts.ColorR.val()*1, this.controls.BrickOpts.ColorG.val()*1, this.controls.BrickOpts.ColorB.val()*1, 1.0, 2, "SideWedge"];
+		inst.mainColorW3 = [this.controls.BrickOpts.ColorR.val()*1, this.controls.BrickOpts.ColorG.val()*1, this.controls.BrickOpts.ColorB.val()*1, 1.0, 3, "SideWedge"];
 		inst.grassColor = [this.controls.BrickOpts.GColorR.val()*1, this.controls.BrickOpts.GColorG.val()*1, this.controls.BrickOpts.GColorB.val()*1, 1.0, 0, "Basic"];
+		inst.grassColorW0 = [this.controls.BrickOpts.GColorR.val()*1, this.controls.BrickOpts.GColorG.val()*1, this.controls.BrickOpts.GColorB.val()*1, 1.0, 0, "SideWedge"];
+		inst.grassColorW1 = [this.controls.BrickOpts.GColorR.val()*1, this.controls.BrickOpts.GColorG.val()*1, this.controls.BrickOpts.GColorB.val()*1, 1.0, 1, "SideWedge"];
+		inst.grassColorW2 = [this.controls.BrickOpts.GColorR.val()*1, this.controls.BrickOpts.GColorG.val()*1, this.controls.BrickOpts.GColorB.val()*1, 1.0, 2, "SideWedge"];
+		inst.grassColorW3 = [this.controls.BrickOpts.GColorR.val()*1, this.controls.BrickOpts.GColorG.val()*1, this.controls.BrickOpts.GColorB.val()*1, 1.0, 3, "SideWedge"];
+		
+		
 		inst.grassDepth = this.controls.LayerOpts.GrassDepth.val()*1;
 		inst.skinDepth = this.controls.LayerOpts.MaxDepth.val()*1;
 		inst.cavePatchDepth = this.controls.CavesOpts.CavePatchDepth.val()*1;
