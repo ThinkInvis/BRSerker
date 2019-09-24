@@ -138,7 +138,6 @@ var NewGen = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(function(in
 			id: 'ffffffff-ffff-ffff-ffff-ffffffffffff',
 			name: 'PUBLIC'
 		}];
-		console.log(inst.brsdata);
 		var nbd = BRS.write(inst.brsdata);
 		BlobDownload("generated.brs", [nbd], "octet/stream");
 	},
