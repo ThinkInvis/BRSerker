@@ -163,7 +163,7 @@ var mapLocalIter2 = function(func, map, r, x, y, mx, my, bx, by) {
 	var ryp = Math.min(y+r, by-1);
 	for(var i = rxm; i <= rxp; i++) {
 		for(var j = rym; j <= ryp; j++) {
-			func(map[i][j], i, j, (i == x) && (j == y));
+			func(map[i][j], i, j, (i == x) && (j == y), x-i, y-j);
 		}
 	}
 }

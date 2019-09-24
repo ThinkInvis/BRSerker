@@ -144,7 +144,53 @@ var NewGen = new StagedBrickGenerator(GenName, [
 			return "Applying falloff... " + pctDone(inst.currX, inst.minX, inst.maxX);
 		}
 	}),
-///// STAGE 4: Heightmap Voxel Mapping
+///// STAGE 4: Erosion/Smoothing
+	new SBG_SlowIterator(function(inst) {
+		if(inst.erosionCount == 0) return true;
+		var nhmc = 0;
+		mapLocalIter2(function(val,x,y,isCenter,locx,locy){
+			nhmc += val * inst.gkern[locx+1][locy+1];
+		}, inst.heightmap, 1, inst.currX, inst.currY, inst.minX, inst.minY, inst.maxX, inst.maxY);
+		inst.nhm[inst.currX][inst.currY] = nhmc;
+		
+		inst.currY++;
+		if(inst.currY >= inst.maxY-inst.padding) {
+			inst.currX++;
+			inst.currY = 0;
+		}
+		if(inst.currX >= inst.maxX-inst.padding) {
+			inst.currX = 0;
+			inst.currY = 0;
+			inst.currI++;
+			for(var i = 0; i < inst.maxX-inst.padding; i++) {
+				for(var j = 0; j < inst.maxY-inst.padding; j++) {
+					inst.heightmap[i][j] = inst.nhm[i][j];
+				}
+			}
+		}
+		return inst.currI >= inst.maxI;
+	},{
+		RunSpeed: 50,
+		MaxExecTime: 40,
+		OnStageSetup: function(inst) {
+			if(inst.erosionCount == 0) return;
+			inst.currX = 0;
+			inst.currY = 0;
+			inst.currI = 0;
+			inst.maxI = inst.erosionCount;
+			inst.nhm = [];
+			inst.gkern = [[1/16, 1/8 , 1/16],
+						  [1/8 , 1/4 , 1/8 ],
+						  [1/16, 1/8 , 1/16]];
+			for(var i = 0; i < inst.maxX-inst.padding; i++) {
+				inst.nhm[i] = [];
+			}
+		},
+		OnStagePause: function(inst) {
+			return "Eroding/smoothing... " + pctDone(inst.currI + ((inst.currX-inst.minX)/(inst.maxX-inst.minX)), 0, inst.maxI);
+		}
+	}),
+///// STAGE 5: Heightmap Voxel Mapping
 	new SBG_SlowIterator(function(inst) {
 		var currHeight = Math.min(Math.floor(inst.heightmap[inst.currX][inst.currY]), inst.maxZ);
 		
@@ -212,7 +258,7 @@ var NewGen = new StagedBrickGenerator(GenName, [
 			return "Voxelizing... " + pctDone(inst.currY, inst.minY, inst.maxY);
 		}
 	}),
-///// STAGE 5: Cavemap Generation
+///// STAGE 6: Cavemap Generation
 	new SBG_SlowIterator(function(inst) {
 		if(!inst.doCaves) return true;
 		
@@ -272,7 +318,7 @@ var NewGen = new StagedBrickGenerator(GenName, [
 			return "Generating cavemap... " + pctDone(inst.currX, inst.minX, inst.maxX);
 		}
 	}),
-///// STAGE 6: Cave Voxel Mapping/Carving
+///// STAGE 7: Cave Voxel Mapping/Carving
 	new SBG_SlowIterator(function(inst) {
 		if(!inst.doCaves) return true;
 		var currHeight = Math.floor(inst.heightmap[inst.currX][inst.currY]);
@@ -334,7 +380,7 @@ var NewGen = new StagedBrickGenerator(GenName, [
 			return "Carving caves... " + pctDone(inst.currX, inst.minX, inst.maxX);
 		}
 	}),
-///// STAGE 7: Wedgify
+///// STAGE 8: Wedgify
 	new SBG_SlowIterator(function(inst) {
 		//padding is removed during this stage, even if wedges are disabled
 		if(!inst.doWedges) return true;
@@ -488,7 +534,7 @@ var NewGen = new StagedBrickGenerator(GenName, [
 				inst.vox = inst.nvox;
 		}
 	}),
-///// STAGE 8: Octree Minimization
+///// STAGE 9: Octree Minimization
 	SBGSI_OctreeVoxels
 ], {
 	Controls: (function() {
@@ -514,7 +560,9 @@ var NewGen = new StagedBrickGenerator(GenName, [
 			OctavesLabel: $("<span>", {"class":"opt-1-2","html":"Octaves:"}),
 			Octaves: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":1, "max":10, "value":3, "step":1, "title": "Number of octaves of noise to generate. More octaves = finer detail: each consecutive octave has double noise frequency, but lower noise scale as determined by 'persistence'."}),
 			PersistenceLabel: $("<span>", {"class":"opt-1-2","html":"Persistence:"}),
-			Persistence: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0.001, "max":0.999, "value":0.8, "step":0.001, "title":"Mutiplier for height scale per octave. E.g. at 0.8 persistence, the first octave has 1x height, the second octave has 0.8x height, the third octave has 0.64x (0.8*0.8) height...."})
+			Persistence: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0.001, "max":0.999, "value":0.8, "step":0.001, "title":"Mutiplier for height scale per octave. E.g. at 0.8 persistence, the first octave has 1x height, the second octave has 0.8x height, the third octave has 0.64x (0.8*0.8) height...."}),
+			SmoothingLabel: $("<span>", {"class":"opt-1-2","html":"Smoothing:<span class='hint'> 0 to disable</span>"}),
+			Smoothing: $("<input>", {"type":"number", "class":"opt-1-2 opt-input", "min":0, "max":1000, "value":0, "step":1, "title":"Number of Gaussian blur (r=1) iterations to perform on the heightmap. This tends to make the terrain smoother in general."})
 		};
 		cObj.NoiseMaster = $("<button>", {"class":"opt-1-1","text":"Show/Hide: Noise Options"});
 		cObj.NoiseContainer = $("<div>", {"class":"controls-subsubpanel","style":"display:none;"});
@@ -681,6 +729,8 @@ var NewGen = new StagedBrickGenerator(GenName, [
 		inst.vNoiseSTS = this.controls.CavesOpts.CaveSTStrength.val()*1;
 		inst.vNoiseBTR = this.controls.CavesOpts.CaveBTRadius.val()*1;
 		inst.vNoiseBTS = this.controls.CavesOpts.CaveBTStrength.val()*1;
+		
+		inst.erosionCount = this.controls.NoiseOpts.Smoothing.val()*1;
 		
 		inst.grassCutoff = this.controls.LayerOpts.GrassCutoff.val()*1;
 		
