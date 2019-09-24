@@ -450,6 +450,7 @@ var NewGen = new StagedBrickGenerator(GenName, [
 			return "Wedgifying... " + Math.floor(inst.currY/inst.maxY*100) + "%";
 		},
 		OnStageFinalize: function(inst) {
+			if(!inst.doWedges) return;
 			inst.vox = inst.nvox;
 		}
 	}),
@@ -613,6 +614,8 @@ var NewGen = new StagedBrickGenerator(GenName, [
 		inst.grassColorW2 = [this.controls.BrickOpts.GColorR.val()*1, this.controls.BrickOpts.GColorG.val()*1, this.controls.BrickOpts.GColorB.val()*1, 1.0, 2, "SideWedge"];
 		inst.grassColorW3 = [this.controls.BrickOpts.GColorR.val()*1, this.controls.BrickOpts.GColorG.val()*1, this.controls.BrickOpts.GColorB.val()*1, 1.0, 3, "SideWedge"];
 		
+		inst.mainColor.octCanMerge = true;
+		inst.grassColor.octCanMerge = true; //TODO: add this to octree.js
 		
 		inst.grassDepth = this.controls.LayerOpts.GrassDepth.val()*1;
 		inst.skinDepth = this.controls.LayerOpts.MaxDepth.val()*1;
