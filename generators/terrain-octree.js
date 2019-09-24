@@ -542,7 +542,9 @@ var NewGen = new StagedBrickGenerator(GenName, [
 			ModeLabel: $("<span>", {"class":"opt-1-2","text":"Irregular splits:"}),
 			Mode: $("<span>", {"class":"opt-1-2 cb-container opt-input", "html":"&nbsp;"}).append($("<input>", {"type":"checkbox","checked":true})),
 			WedgeLabel: $("<span>", {"class":"opt-1-2","text":"Wedges:"}),
-			Wedge: $("<select class='opt-1-2 opt-input'><option value='none' selected>None</option><option value='h'>Horizontal</option><option value='v' disabled='disabled'>Vertical (NYI)</option></select>")
+			Wedge: $("<select class='opt-1-2 opt-input'><option value='none' selected>None</option><option value='h'>Horizontal</option><option value='v' disabled='disabled'>Vertical (NYI)</option></select>"),
+			WedgePunchLabel: $("<span>", {"class":"opt-1-2","text":"Wedge punchthrough:"}),
+			WedgePunch: $("<span>", {"class":"opt-1-2 cb-container opt-input", "html":"&nbsp;"}).append($("<input>", {"type":"checkbox","checked":true}))
 		};
 		cObj.VoxelMaster = $("<button>", {"class":"opt-1-1","text":"Show/Hide: Voxelization Options"});
 		cObj.VoxelContainer = $("<div>", {"class":"controls-subsubpanel","style":"display:none;"});
@@ -606,6 +608,7 @@ var NewGen = new StagedBrickGenerator(GenName, [
 		inst.posZ = this.controls.NoiseOpts.SeedPosZ.val()*1;
 		
 		inst.doWedges = this.controls.VoxelOpts.Wedge.val() == "h";
+		inst.wedgePunch = this.controls.VoxelOpts.WedgePunch.get(0).checked;
 		
 		inst.hNoiseOctaves = this.controls.NoiseOpts.Octaves.val()*1;
 		inst.hNoisePersistence = this.controls.NoiseOpts.Persistence.val()*1;
