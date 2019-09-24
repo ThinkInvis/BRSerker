@@ -1,4 +1,5 @@
 //https://gist.github.com/Meshiest/0b1a5b3dc4a9337c359e94d33ba322a5
+//NOTE: don't do anything with array.length here, negative indices are used
 var GenName = "OcTerrain";
 var GenDisplayName = "OcTerrain";
 var GenCategory = "Procedural Generation";
@@ -27,23 +28,24 @@ var NewGen = new StagedBrickGenerator(GenName, [
 		
 		inst.currX++;
 		if(inst.currX >= inst.maxX) {
-			inst.currX = 0;
+			inst.currX = inst.minX;
 			inst.currY ++;
 		}
 		return inst.currY >= inst.maxY;
 	},{
 		RunSpeed: 50,
 		MaxExecTime: 40,
+		Batching: 100,
 		OnStageSetup: function(inst) {
-			inst.currX = 0;
-			inst.currY = 0;
+			inst.currX = inst.minX;
+			inst.currY = inst.minY;
 			inst.heightmap = [];
-			for(var i = 0; i < inst.maxX; i++) {
+			for(var i = inst.minX; i < inst.maxX; i++) {
 				inst.heightmap[i] = [];
 			}
 		},
 		OnStagePause: function(inst) {
-			return "Generating heightmap... " + Math.floor(inst.currY/inst.maxY*100) + "%";
+			return "Generating heightmap... " + pctDone(inst.currY, inst.minY, inst.maxY);
 		}
 	}),
 ///// STAGE 2: Falloff map generation
@@ -51,6 +53,7 @@ var NewGen = new StagedBrickGenerator(GenName, [
 		if(!inst.doFalloff) return true;
 		//rolling particle mask
 		//http://www.nolithius.com/articles/world-generation/world-generation-breakdown
+		//doesn't use padding area
 		
 		for(var i = 0; i < inst.maxP; i++) {
 			inst.pmap[inst.currX][inst.currY] ++;
@@ -63,9 +66,7 @@ var NewGen = new StagedBrickGenerator(GenName, [
 			var nx = inst.currX + stepX;
 			var ny = inst.currY + stepY;
 			
-			if(nx >= inst.maxX || ny >= inst.maxY || nx < 0 || ny < 0) {
-				
-			} else {
+			if(nx < inst.maxX-inst.padding && ny < inst.maxY-inst.padding && nx >= 0 && ny >= 0) {
 				var nval = inst.pmap[nx][ny];
 				if(nval <= oval) {
 					inst.currX = nx;
@@ -74,8 +75,8 @@ var NewGen = new StagedBrickGenerator(GenName, [
 			}
 		}
 		
-		inst.currX = fracToInt(inst.minEdgeDist, inst.maxX-inst.minEdgeDist-1, inst.prng());
-		inst.currY = fracToInt(inst.minEdgeDist, inst.maxY-inst.minEdgeDist-1, inst.prng());
+		inst.currX = fracToInt(inst.minEdgeDist, inst.maxX-1-inst.minEdgeDist-inst.padding, inst.prng());
+		inst.currY = fracToInt(inst.minEdgeDist, inst.maxY-1-inst.minEdgeDist-inst.padding, inst.prng());
 		inst.currI++;
 		
 		return inst.currI >= inst.maxI;
@@ -89,28 +90,28 @@ var NewGen = new StagedBrickGenerator(GenName, [
 			inst.maxI = inst.maxX*inst.maxY*inst.falloffCount;
 			inst.maxP = inst.falloffLife;
 			inst.minEdgeDist = inst.falloffEdge;
-			inst.currX = fracToInt(inst.minEdgeDist, inst.maxX-inst.minEdgeDist-1, inst.prng());
-			inst.currY = fracToInt(inst.minEdgeDist, inst.maxY-inst.minEdgeDist-1, inst.prng());
+			inst.currX = fracToInt(inst.minEdgeDist, inst.maxX-1-inst.minEdgeDist-inst.padding, inst.prng());
+			inst.currY = fracToInt(inst.minEdgeDist, inst.maxY-1-inst.minEdgeDist-inst.padding, inst.prng());
 			inst.pmap = [];
-			for(var i = 0; i < inst.maxX; i++) {
+			for(var i = inst.minX; i < inst.maxX; i++) {
 				inst.pmap[i] = [];
-				for(var j = 0; j < inst.maxY; j++) {
+				for(var j = inst.minY; j < inst.maxY; j++) {
 					inst.pmap[i][j] = 0;
 				}
 			}
 			inst.highestPmap = 0;
 		},
 		OnStagePause: function(inst) {
-			return "Generating falloff map... " + Math.floor(inst.currI/inst.maxI*100) + "%";
+			return "Generating falloff map... " + pctDone(inst.currI, 0, inst.maxI);
 		},
 		OnStageFinalize: function(inst) {
 			if(!inst.doFalloff) return;
-			for(var i = 0; i < inst.maxX; i++) {
-				for(var j = 0; j < inst.maxY; j++) {
+			for(var i = 0; i < inst.maxX-inst.padding; i++) {
+				for(var j = 0; j < inst.maxY-inst.padding; j++) {
 					//edge blurring. TODO: add option
-					var idist = Math.min(i, inst.maxX-1-i);
-					var jdist = Math.min(j, inst.maxY-1-j);
-					if(idist == 0 || jdist == 0) inst.pmap[i][j] = 0;
+					var idist = Math.min(i-inst.minX, inst.maxX-1-i);
+					var jdist = Math.min(j-inst.minY, inst.maxY-1-j);
+					if(idist == 0 || jdist == 0) inst.pmap[i][j] *= 0.125;
 					else if(idist == 1 || jdist == 1) inst.pmap[i][j] *= 0.5;
 					else if(idist == 2 || jdist == 2) inst.pmap[i][j] *= 0.75;
 					else if(idist == 3 || jdist == 3) inst.pmap[i][j] *= 0.825;
@@ -124,12 +125,11 @@ var NewGen = new StagedBrickGenerator(GenName, [
 	new SBG_SlowIterator(function(inst) {
 		if(!inst.doFalloff) return true;
 		inst.heightmap[inst.currX][inst.currY] *= inst.pmap[inst.currX][inst.currY];
-		//inst.heightmap[inst.currX][inst.currY] = falloffMul * inst.maxZ;
 		
 		inst.currY++;
 		if(inst.currY >= inst.maxY) {
 			inst.currX++;
-			inst.currY = 0;
+			inst.currY = inst.minY;
 		}
 		return inst.currX >= inst.maxX;
 	},{
@@ -137,11 +137,11 @@ var NewGen = new StagedBrickGenerator(GenName, [
 		MaxExecTime: 40,
 		OnStageSetup: function(inst) {
 			if(!inst.doFalloff) return;
-			inst.currX = 0;
-			inst.currY = 0;
+			inst.currX = inst.minX;
+			inst.currY = inst.minY;
 		},
 		OnStagePause: function(inst) {
-			return "Applying falloff... " + Math.floor(inst.currX/inst.maxX*100) + "%";
+			return "Applying falloff... " + pctDone(inst.currX, inst.minX, inst.maxX);
 		}
 	}),
 ///// STAGE 4: Heightmap Voxel Mapping
@@ -155,19 +155,19 @@ var NewGen = new StagedBrickGenerator(GenName, [
 				if(isCenter) return;
 				var nbHeight = Math.floor(val);
 				if(nbHeight < lowestNeighbor) lowestNeighbor = nbHeight;
-			}, inst.heightmap, 1, inst.currX, inst.currY, inst.maxX, inst.maxY);
+			}, inst.heightmap, 1, inst.currX, inst.currY, inst.minX, inst.minY, inst.maxX, inst.maxY);
 		}
 		
 		//in non-cave generation we can go really fast along the z axis so don't bother slowiterating it
 		if(inst.skinDepth >= 0) {
-			for(var k = 0; k < lowestNeighbor-inst.skinDepth; k++) {
+			/*for(var k = inst.minZ; k < lowestNeighbor-inst.skinDepth; k++) {
 				inst.vox[inst.currX][inst.currY][k] = "skip";
-			}
+			}*/
 			for(var k = lowestNeighbor-inst.skinDepth; k < currHeight; k++) {
 				inst.vox[inst.currX][inst.currY][k] = inst.mainColor;
 			}
 		} else {
-			for(var k = 0; k < currHeight; k++) {
+			for(var k = inst.minZ; k < currHeight; k++) {
 				inst.vox[inst.currX][inst.currY][k] = inst.mainColor;
 			}
 		}
@@ -175,18 +175,19 @@ var NewGen = new StagedBrickGenerator(GenName, [
 			for(var k = currHeight; k < Math.min(currHeight+inst.grassDepth, inst.maxZ); k++) {
 				inst.vox[inst.currX][inst.currY][k] = inst.grassColor;
 			}
-			for(var k = currHeight+inst.grassDepth; k < inst.maxZ; k++) {
+		}
+			/*for(var k = currHeight+inst.grassDepth; k < inst.maxZ; k++) {
 				inst.vox[inst.currX][inst.currY][k] = "skip";
 			}
 		} else {
 			for(var k = currHeight; k < inst.maxZ; k++) {
 				inst.vox[inst.currX][inst.currY][k] = "skip";
 			}
-		}
+		}*/
 		
 		inst.currX++;
 		if(inst.currX >= inst.maxX) {
-			inst.currX = 0;
+			inst.currX = inst.minX;
 			inst.currY++;
 		}
 		return inst.currY >= inst.maxY;
@@ -195,17 +196,20 @@ var NewGen = new StagedBrickGenerator(GenName, [
 		MaxExecTime: 40,
 		OnStageSetup: function(inst) {
 			inst.vox = [];
-			for(var i = 0; i < inst.maxX; i++) {
+			for(var i = inst.minX; i < inst.maxX; i++) {
 				inst.vox[i] = [];
-				for(var j = 0; j < inst.maxY; j++) {
+				for(var j = inst.minY; j < inst.maxY; j++) {
 					inst.vox[i][j] = [];
+					for(var k = inst.minZ; k < inst.maxZ; k++) {
+						inst.vox[i][j][k] = "skip";
+					}
 				}
 			}
-			inst.currX = 0;
-			inst.currY = 0;
+			inst.currX = inst.minX;
+			inst.currY = inst.minY;
 		},
 		OnStagePause: function(inst) {
-			return "Voxelizing... " + Math.floor(inst.currY/inst.maxY*100) + "%";
+			return "Voxelizing... " + pctDone(inst.currY, inst.minY, inst.maxY);
 		}
 	}),
 ///// STAGE 5: Cavemap Generation
@@ -230,6 +234,7 @@ var NewGen = new StagedBrickGenerator(GenName, [
 			inst.cavemap[inst.currX][inst.currY][inst.currZ] += (1-STFac) * inst.vNoiseSTS;
 		}
 		//"floor tension" - same deal but near the bottom of the build to avoid exposing map floor
+		//doesn't use padding area
 		if(inst.currZ <= inst.vNoiseBTR) {
 			var BTFac = inst.currZ/inst.vNoiseBTR;
 			inst.cavemap[inst.currX][inst.currY][inst.currZ] += (1-BTFac) * inst.vNoiseBTS;
@@ -238,12 +243,12 @@ var NewGen = new StagedBrickGenerator(GenName, [
 		
 		inst.currZ++;
 		if(inst.currZ >= inst.maxZ) {
-			inst.currZ=0;
+			inst.currZ=inst.minZ;
 			inst.currY++;
 			inst.cavemap[inst.currX][inst.currY] = [];
 		}
 		if(inst.currY >= inst.maxY) {
-			inst.currY=0;
+			inst.currY=inst.minY;
 			inst.currX++;
 			inst.cavemap[inst.currX] = [[]];
 		}
@@ -255,12 +260,12 @@ var NewGen = new StagedBrickGenerator(GenName, [
 		OnStageSetup: function(inst) {
 			if(!inst.doCaves) return;
 			inst.cavemap = [[[]]];
-			inst.currX = 0;
-			inst.currY = 0;
-			inst.currZ = 0;
+			inst.currX = inst.minX;
+			inst.currY = inst.minY;
+			inst.currZ = inst.minZ;
 		},
 		OnStagePause: function(inst) {
-			return "Generating cavemap... " + Math.floor(inst.currX/inst.maxX*100) + "%";
+			return "Generating cavemap... " + pctDone(inst.currX, inst.minX, inst.maxX);
 		}
 	}),
 ///// STAGE 6: Cave Voxel Mapping/Carving
@@ -270,14 +275,14 @@ var NewGen = new StagedBrickGenerator(GenName, [
 		
 		var cap = Math.min(inst.maxZ, currHeight);
 		
-		for(var k = 0; k < cap; k++) {
+		for(var k = inst.minZ; k < cap; k++) {
 			if(inst.cavemap[inst.currX][inst.currY][k] < inst.vNoiseChance)
 				inst.vox[inst.currX][inst.currY][k] = "skip";
 			else if(inst.skinDepth >= 0 && k < currHeight - inst.skinDepth) { //skin depth is on, generate shell around caves
 				var foundNeighbor = false;
 				mapLocalIter3(function(val,x,y,z){
 					if(val < inst.vNoiseChance) foundNeighbor = true;
-				}, inst.cavemap, 1, inst.currX, inst.currY, k, inst.maxX, inst.maxY, inst.maxZ);
+				}, inst.cavemap, 1, inst.currX, inst.currY, k, inst.minX, inst.minY, inst.minZ, inst.maxX, inst.maxY, inst.maxZ);
 				//foundNeighbor is only true if we're not in a cave-carved voxel, BUT one of the adjacent voxels is
 				if(foundNeighbor)
 					inst.vox[inst.currX][inst.currY][k] = inst.mainColor;
@@ -300,7 +305,7 @@ var NewGen = new StagedBrickGenerator(GenName, [
 				if(inst.cavemap[x][y][Math.max(val-1,0)] >= inst.vNoiseChance) return;
 				var nbHeight = Math.floor(val);
 				if(nbHeight < lowestNeighbor) lowestNeighbor = nbHeight;
-			}, inst.heightmap, 1, inst.currX, inst.currY, inst.maxX, inst.maxY);
+			}, inst.heightmap, 1, inst.currX, inst.currY, inst.minX, inst.minY, inst.maxX, inst.maxY);
 			for(var k = lowestNeighbor-inst.cavePatchDepth; k < cap; k++) {
 				inst.vox[inst.currX][inst.currY][k] = inst.mainColor;
 			}
@@ -308,7 +313,7 @@ var NewGen = new StagedBrickGenerator(GenName, [
 			
 		inst.currX++;
 		if(inst.currX >= inst.maxX) {
-			inst.currX = 0;
+			inst.currX = inst.minX;
 			inst.currY++;
 		}
 		return inst.currY >= inst.maxY;
@@ -318,15 +323,16 @@ var NewGen = new StagedBrickGenerator(GenName, [
 		Batching: 100,
 		OnStageSetup: function(inst) {
 			if(!inst.doCaves) return;
-			inst.currX = 0;
-			inst.currY = 0;
+			inst.currX = inst.minX;
+			inst.currY = inst.minY;
 		},
 		OnStagePause: function(inst) {
-			return "Carving caves... " + Math.floor(inst.currY/inst.maxY*100) + "%";
+			return "Carving caves... " + pctDone(inst.currX, inst.minX, inst.maxX);
 		}
 	}),
 ///// STAGE 7: Wedgify
 	new SBG_SlowIterator(function(inst) {
+		//padding is removed during this stage, even if wedges are disabled
 		if(!inst.doWedges) return true;
 		var currHeight = Math.floor(inst.heightmap[inst.currX][inst.currY]);
 		
@@ -415,43 +421,57 @@ var NewGen = new StagedBrickGenerator(GenName, [
 				inst.nvox[inst.currX][inst.currY][k] = isMain ? inst.mainColorW1 : inst.grassColorW1;
 				
 			
-			//if bottom grass block is wedgified, convert voxel below to unwedgified grass
+			//if bottom grass voxel is wedgified, convert first nonwedgified terrain voxel below to grass
 			if(inst.grassDepth > 0 && k == currHeight && k > 0) {
-				inst.nvox[inst.currX][inst.currY][k-1] = inst.grassColor;
+				for(var kk = currHeight; kk >= 0; kk--) {
+					var nv = inst.nvox[inst.currX][inst.currY][kk]; 
+					if(nv[5] == "Basic") {
+						inst.nvox[inst.currX][inst.currY][kk] = inst.grassColor;
+						break;
+					}
+				}
 			}
 		}
 		
 		inst.currX++;
-		if(inst.currX >= inst.maxX-1) {
-			inst.currX = 1;
+		if(inst.currX >= inst.maxX) {
+			inst.currX = 0;
 			inst.currY++;
 		}
-		return inst.currY >= inst.maxY-1;
+		return inst.currY >= inst.maxY;
 	},{
 		RunSpeed: 50,
 		MaxExecTime: 40,
 		Batching: 100,
 		OnStageSetup: function(inst) {
-			if(!inst.doWedges) return;
-			inst.currX = 1;
-			inst.currY = 1;
-			inst.nvox = [];
-			for(var i = 0; i < inst.maxX; i++) {
-				inst.nvox[i] = [];
-				for(var j = 0; j < inst.maxY; j++) {
-					inst.nvox[i][j] = [];
-					for(var k = 0; k < inst.maxZ; k++) {
-						inst.nvox[i][j][k] = inst.vox[i][j][k];
+			if(inst.doWedges) {
+				inst.nvox = [];
+				for(var i = 0; i < inst.maxX; i++) {
+					inst.nvox[i] = [];
+					for(var j = 0; j < inst.maxY; j++) {
+						inst.nvox[i][j] = [];
+						for(var k = 0; k < inst.maxZ; k++) {
+							inst.nvox[i][j][k] = inst.vox[i][j][k];
+						}
 					}
 				}
 			}
+			inst.minX += inst.padding;
+			inst.minY += inst.padding;
+			inst.minZ += inst.padding;
+			inst.currX = 0;
+			inst.currY = 0;
+			inst.currZ = 0;
+			inst.maxX -= inst.padding;
+			inst.maxY -= inst.padding;
+			inst.maxZ -= inst.padding;
 		},
 		OnStagePause: function(inst) {
-			return "Wedgifying... " + Math.floor(inst.currY/inst.maxY*100) + "%";
+			return "Wedgifying... " + pctDone(inst.currY, 0, inst.maxY);
 		},
 		OnStageFinalize: function(inst) {
-			if(!inst.doWedges) return;
-			inst.vox = inst.nvox;
+			if(inst.doWedges)
+				inst.vox = inst.nvox;
 		}
 	}),
 ///// STAGE 8: Octree Minimization
@@ -599,9 +619,15 @@ var NewGen = new StagedBrickGenerator(GenName, [
 		return cObj;
 	})(),
 	OnSetup: function(inst) {
-		inst.maxX = this.controls.NoiseOpts.SizeX.val()*1;
-		inst.maxY = this.controls.NoiseOpts.SizeY.val()*1;
-		inst.maxZ = this.controls.NoiseOpts.SizeZ.val()*1;
+		inst.padding = 1;
+		
+		inst.minX = -inst.padding;
+		inst.minY = -inst.padding;
+		inst.minZ = -inst.padding;
+		
+		inst.maxX = this.controls.NoiseOpts.SizeX.val()*1+inst.padding;
+		inst.maxY = this.controls.NoiseOpts.SizeY.val()*1+inst.padding;
+		inst.maxZ = this.controls.NoiseOpts.SizeZ.val()*1+inst.padding;
 		
 		inst.mainColor = [this.controls.BrickOpts.ColorR.val()*1, this.controls.BrickOpts.ColorG.val()*1, this.controls.BrickOpts.ColorB.val()*1, 1.0, 0, "Basic"];
 		inst.mainColorW0 = [this.controls.BrickOpts.ColorR.val()*1, this.controls.BrickOpts.ColorG.val()*1, this.controls.BrickOpts.ColorB.val()*1, 1.0, 0, "SideWedge"];

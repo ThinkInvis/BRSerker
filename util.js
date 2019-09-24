@@ -91,6 +91,10 @@ var isPow2 = function(n) {
 	return (n !== 0) && (n & (n - 1)) === 0;
 }
 
+var pctDone = function(x,a,b) {
+	return ((x-a)/(b-a)*100).toFixed(1) + "%";
+}
+
 function download(filename, text) {
   var element = document.createElement('a');
   element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
@@ -152,10 +156,10 @@ var	fracToInt = function (low, high, src) {
 	return low + Math.floor(src * ( high - low + 1 ));
 }
 
-var mapLocalIter2 = function(func, map, r, x, y, bx, by) {
-	var rxm = Math.max(x-r, 0);
+var mapLocalIter2 = function(func, map, r, x, y, mx, my, bx, by) {
+	var rxm = Math.max(x-r, mx);
 	var rxp = Math.min(x+r, bx-1);
-	var rym = Math.max(y-r, 0);
+	var rym = Math.max(y-r, my);
 	var ryp = Math.min(y+r, by-1);
 	for(var i = rxm; i <= rxp; i++) {
 		for(var j = rym; j <= ryp; j++) {
@@ -164,12 +168,12 @@ var mapLocalIter2 = function(func, map, r, x, y, bx, by) {
 	}
 }
 
-var mapLocalIter3 = function(func, map, r, x, y, z, bx, by, bz) {
-	var rxm = Math.max(x-r, 0);
+var mapLocalIter3 = function(func, map, r, x, y, z, mx, my, mz, bx, by, bz) {
+	var rxm = Math.max(x-r, mx);
 	var rxp = Math.min(x+r, bx-1);
-	var rym = Math.max(y-r, 0);
+	var rym = Math.max(y-r, my);
 	var ryp = Math.min(y+r, by-1);
-	var rzm = Math.max(z-r, 0);
+	var rzm = Math.max(z-r, mz);
 	var rzp = Math.min(z+r, bz-1);
 	for(var i = rxm; i <= rxp; i++) {
 		for(var j = rym; j <= ryp; j++) {
