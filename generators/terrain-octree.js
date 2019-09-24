@@ -357,7 +357,7 @@ var NewGen = new StagedBrickGenerator(GenName, [
 			//            ##
 			//         ^ should be removed because it looks bad near wedges
 			//TODO: remove multiple outcrops (iterate this multiple times in the area if one is found)... or reduce them to two sub-minimum wedges somehow (2x horizontal voxels internally in this stage?)
-			/*if((!nbMP && !nbZP && !nbPP
+			if(inst.wedgeErodeOutcrops && ((!nbMP && !nbZP && !nbPP
 			  && nbMZ &&           nbPZ
 			  && nbMM &&  nbZM &&  nbPM)
 			|| (!nbMP &&  nbZP &&  nbPP
@@ -368,10 +368,10 @@ var NewGen = new StagedBrickGenerator(GenName, [
 			  &&!nbMM && !nbZM && !nbPM)
 			|| ( nbMP &&  nbZP && !nbPP
 			  && nbMZ &&          !nbPZ
-			  && nbMM &&  nbZM && !nbPM)) {
-				  inst.vox[inst.currX][inst.currY][k] = "skip";
+			  && nbMM &&  nbZM && !nbPM))) {
+				  inst.nvox[inst.currX][inst.currY][k] = "skip";
 				  continue;
-			  }*/
+			  }
 			
 			
 			//y
@@ -382,7 +382,7 @@ var NewGen = new StagedBrickGenerator(GenName, [
 			if(          nbZP && nWPP
 			&& !nbMZ &&          nbPZ
 			&& !nbMM && !nbZM        )
-				inst.vox[inst.currX][inst.currY][k] = isMain ? inst.mainColorW0 : inst.grassColorW0;
+				inst.nvox[inst.currX][inst.currY][k] = isMain ? inst.mainColorW0 : inst.grassColorW0;
 			
 			//y
 			//PA ?
@@ -392,7 +392,7 @@ var NewGen = new StagedBrickGenerator(GenName, [
 			if( nWMP && nbZP
 			&&  nbMZ &&         !nbPZ
 			&&         !nbZM && !nbPM)
-				inst.vox[inst.currX][inst.currY][k] = isMain ? inst.mainColorW3 : inst.grassColorW3;
+				inst.nvox[inst.currX][inst.currY][k] = isMain ? inst.mainColorW3 : inst.grassColorW3;
 			
 			//y
 			//P?##
@@ -402,7 +402,7 @@ var NewGen = new StagedBrickGenerator(GenName, [
 			if(         !nbZP &&!nbPP
 			&&  nbMZ &&         !nbPZ
 			&&  nWMM &&  nbZM        )
-				inst.vox[inst.currX][inst.currY][k] = isMain ? inst.mainColorW2 : inst.grassColorW2;
+				inst.nvox[inst.currX][inst.currY][k] = isMain ? inst.mainColorW2 : inst.grassColorW2;
 			
 			//y
 			//P##?
@@ -412,12 +412,12 @@ var NewGen = new StagedBrickGenerator(GenName, [
 			if(!nbMP &&!nbZP
 			&& !nbMZ &&          nbPZ
 			&&          nbZM &&  nWPM)
-				inst.vox[inst.currX][inst.currY][k] = isMain ? inst.mainColorW1 : inst.grassColorW1;
+				inst.nvox[inst.currX][inst.currY][k] = isMain ? inst.mainColorW1 : inst.grassColorW1;
 				
 			
 			//if bottom grass block is wedgified, convert voxel below to unwedgified grass
 			if(inst.grassDepth > 0 && k == currHeight && k > 0) {
-				inst.vox[inst.currX][inst.currY][k-1] = inst.grassColor;
+				inst.nvox[inst.currX][inst.currY][k-1] = inst.grassColor;
 			}
 		}
 		
@@ -435,9 +435,22 @@ var NewGen = new StagedBrickGenerator(GenName, [
 			if(!inst.doWedges) return;
 			inst.currX = 1;
 			inst.currY = 1;
+			inst.nvox = [];
+			for(var i = 0; i < inst.maxX; i++) {
+				inst.nvox[i] = [];
+				for(var j = 0; j < inst.maxY; j++) {
+					inst.nvox[i][j] = [];
+					for(var k = 0; k < inst.maxZ; k++) {
+						inst.nvox[i][j][k] = inst.vox[i][j][k];
+					}
+				}
+			}
 		},
 		OnStagePause: function(inst) {
 			return "Wedgifying... " + Math.floor(inst.currY/inst.maxY*100) + "%";
+		},
+		OnStageFinalize: function(inst) {
+			inst.vox = inst.nvox;
 		}
 	}),
 ///// STAGE 8: Octree Minimization
@@ -544,7 +557,9 @@ var NewGen = new StagedBrickGenerator(GenName, [
 			WedgeLabel: $("<span>", {"class":"opt-1-2","text":"Wedges:"}),
 			Wedge: $("<select class='opt-1-2 opt-input'><option value='none' selected>None</option><option value='h'>Horizontal</option><option value='v' disabled='disabled'>Vertical (NYI)</option></select>"),
 			WedgePunchLabel: $("<span>", {"class":"opt-1-2","text":"Wedge punchthrough:"}),
-			WedgePunch: $("<span>", {"class":"opt-1-2 cb-container opt-input", "html":"&nbsp;"}).append($("<input>", {"type":"checkbox","checked":true}))
+			WedgePunch: $("<span>", {"class":"opt-1-2 cb-container opt-input", "html":"&nbsp;"}).append($("<input>", {"type":"checkbox","checked":true})),
+			WedgeErodeLabel: $("<span>", {"class":"opt-1-2","text":"Wedge erode outcrops:"}),
+			WedgeErode: $("<span>", {"class":"opt-1-2 cb-container opt-input", "html":"&nbsp;"}).append($("<input>", {"type":"checkbox","checked":false}))
 		};
 		cObj.VoxelMaster = $("<button>", {"class":"opt-1-1","text":"Show/Hide: Voxelization Options"});
 		cObj.VoxelContainer = $("<div>", {"class":"controls-subsubpanel","style":"display:none;"});
@@ -609,6 +624,7 @@ var NewGen = new StagedBrickGenerator(GenName, [
 		
 		inst.doWedges = this.controls.VoxelOpts.Wedge.val() == "h";
 		inst.wedgePunch = this.controls.VoxelOpts.WedgePunch.get(0).checked;
+		inst.wedgeErodeOutcrops = this.controls.VoxelOpts.WedgeErode.get(0).checked;
 		
 		inst.hNoiseOctaves = this.controls.NoiseOpts.Octaves.val()*1;
 		inst.hNoisePersistence = this.controls.NoiseOpts.Persistence.val()*1;
