@@ -111,17 +111,17 @@ var NewGen = new StagedBrickGenerator(GenName, [
 		var ptTri = new THREE.Triangle(ptA, ptB, ptC);
 		
 		var ptMin = ptA.clone().min(ptB).min(ptC).max(new THREE.Vector3(0,0,0)).floor();
-		var ptMax = ptA.clone().max(ptB).max(ptC).min(new THREE.Vector3(inst.maxX-1,inst.maxY-1,inst.maxZ-1)).ceil();
+		var ptMax = ptA.clone().max(ptB).max(ptC).min(new THREE.Vector3(inst.maxX-1,inst.maxY-1,inst.maxZ/3-1)).ceil();
 		
 		//todo: better algorithm
 		//maybe here
 		//https://github.com/gerddie/mia/blob/master/mia/3d/imagedraw.cc
 		for(var i = ptMin.x; i <= ptMax.x; i++) {
 			for(var j = ptMin.y; j <= ptMax.y; j++) {
-				for(var k = ptMin.z; k <= ptMax.z; k++) {
+				for(var k = ptMin.z*3; k <= ptMax.z*3; k++) {
 					var ibox = new THREE.Box3(
-						new THREE.Vector3(i,j,k),
-						new THREE.Vector3(i+1,j+1,k+1)
+						new THREE.Vector3(i,j,k/3),
+						new THREE.Vector3(i+1,j+1,(k+1)/3)
 					);
 					if(ibox.intersectsTriangle(ptTri))
 						inst.vox[i][j][k] = color;
@@ -148,7 +148,7 @@ var NewGen = new StagedBrickGenerator(GenName, [
 			
 			inst.maxX = Math.ceil(inst.bsize.x*inst.res/inst.bmax);
 			inst.maxY = Math.ceil(inst.bsize.y*inst.res/inst.bmax);
-			inst.maxZ = Math.ceil(inst.bsize.z*inst.res/inst.bmax);
+			inst.maxZ = Math.ceil(inst.bsize.z*inst.res/inst.bmax*3);
 			
 			inst.vox = [];
 			for(var i = 0; i < inst.maxX; i++) {
@@ -195,6 +195,7 @@ var NewGen = new StagedBrickGenerator(GenName, [
 		inst.mtlFileName = this.controls.MtlReader.get(0).files[0];
 		
 		inst.octreeIrregular = true;
+		inst.octreeScale = [1,1,1];
 		inst.octreeSizeLimit = [204, 204, 511];
 	},
 	Description: "Generates a shell of bricks around the geometry defined in an OBJ file."
