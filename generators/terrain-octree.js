@@ -245,12 +245,10 @@ var NewGen = new StagedBrickGenerator(GenName, [
 		if(inst.currZ >= inst.maxZ) {
 			inst.currZ=inst.minZ;
 			inst.currY++;
-			inst.cavemap[inst.currX][inst.currY] = [];
 		}
 		if(inst.currY >= inst.maxY) {
 			inst.currY=inst.minY;
 			inst.currX++;
-			inst.cavemap[inst.currX] = [[]];
 		}
 		return inst.currX >= inst.maxX;
 	},{
@@ -259,7 +257,13 @@ var NewGen = new StagedBrickGenerator(GenName, [
 		Batching: 1000,
 		OnStageSetup: function(inst) {
 			if(!inst.doCaves) return;
-			inst.cavemap = [[[]]];
+			inst.cavemap = [];
+			for(var i = inst.minX; i < inst.maxX; i++) {
+				inst.cavemap[i] = [];
+				for(var j = inst.minY; j < inst.maxY; j++) {
+					inst.cavemap[i][j] = [];
+				}
+			}
 			inst.currX = inst.minX;
 			inst.currY = inst.minY;
 			inst.currZ = inst.minZ;
@@ -336,7 +340,7 @@ var NewGen = new StagedBrickGenerator(GenName, [
 		if(!inst.doWedges) return true;
 		var currHeight = Math.floor(inst.heightmap[inst.currX][inst.currY]);
 		
-		var cap = Math.min(inst.maxZ, currHeight+inst.grassDepth);
+		var cap = Math.min(inst.maxZ, currHeight+((inst.grassDepth>0)?1:0));
 		
 		for(var k = 0; k < cap; k++) {
 			var currVox = inst.vox[inst.currX][inst.currY][k];
@@ -420,15 +424,25 @@ var NewGen = new StagedBrickGenerator(GenName, [
 			&&          nbZM &&  nWPM)
 				inst.nvox[inst.currX][inst.currY][k] = isMain ? inst.mainColorW1 : inst.grassColorW1;
 				
-			
-			//if bottom grass voxel is wedgified, convert first nonwedgified terrain voxel below to grass
-			if(inst.grassDepth > 0 && k == currHeight && k > 0) {
-				for(var kk = currHeight; kk >= 0; kk--) {
-					var nv = inst.nvox[inst.currX][inst.currY][kk]; 
+			var ntv = inst.nvox[inst.currX][inst.currY][k];
+			//if bottom grass voxel is wedgified,
+			if(k == currHeight && inst.grassDepth > 0 && k > 0 && ntv[5] != "Basic") {
+				//below: convert all wedgified terrain voxels, and first nonwedgified terrain voxel, to grass color
+				for(var k2 = currHeight; k2 >= 0; k2--) {
+					var nv = inst.nvox[inst.currX][inst.currY][k2]; 
 					if(nv[5] == "Basic") {
-						inst.nvox[inst.currX][inst.currY][kk] = inst.grassColor;
+						inst.nvox[inst.currX][inst.currY][k2] = inst.grassColor;
 						break;
+					} else {
+						inst.nvox[inst.currX][inst.currY][k2] = [
+							nv[0], nv[1], nv[2], nv[3],
+							ntv[4], ntv[5]
+						];
 					}
+				}
+				//above: wedgify all grass in the same direction
+				for(var k2 = k+1; k2 < Math.min(currHeight+inst.grassDepth, inst.maxZ); k2++) {
+					inst.nvox[inst.currX][inst.currY][k2] = inst.nvox[inst.currX][inst.currY][k];
 				}
 			}
 		}
