@@ -691,16 +691,16 @@ var NewGen = new StagedBrickGenerator(GenName, [
 		inst.maxY = this.controls.NoiseOpts.SizeY.val()*1+inst.padding;
 		inst.maxZ = this.controls.NoiseOpts.SizeZ.val()*1+inst.padding;
 		
-		inst.mainColor = [this.controls.BrickOpts.ColorR.val()*1, this.controls.BrickOpts.ColorG.val()*1, this.controls.BrickOpts.ColorB.val()*1, 1.0, 0, "Basic"];
-		inst.mainColorW0 = [this.controls.BrickOpts.ColorR.val()*1, this.controls.BrickOpts.ColorG.val()*1, this.controls.BrickOpts.ColorB.val()*1, 1.0, 0, "SideWedge"];
-		inst.mainColorW1 = [this.controls.BrickOpts.ColorR.val()*1, this.controls.BrickOpts.ColorG.val()*1, this.controls.BrickOpts.ColorB.val()*1, 1.0, 1, "SideWedge"];
-		inst.mainColorW2 = [this.controls.BrickOpts.ColorR.val()*1, this.controls.BrickOpts.ColorG.val()*1, this.controls.BrickOpts.ColorB.val()*1, 1.0, 2, "SideWedge"];
-		inst.mainColorW3 = [this.controls.BrickOpts.ColorR.val()*1, this.controls.BrickOpts.ColorG.val()*1, this.controls.BrickOpts.ColorB.val()*1, 1.0, 3, "SideWedge"];
-		inst.grassColor = [this.controls.BrickOpts.GColorR.val()*1, this.controls.BrickOpts.GColorG.val()*1, this.controls.BrickOpts.GColorB.val()*1, 1.0, 0, "Basic"];
-		inst.grassColorW0 = [this.controls.BrickOpts.GColorR.val()*1, this.controls.BrickOpts.GColorG.val()*1, this.controls.BrickOpts.GColorB.val()*1, 1.0, 0, "SideWedge"];
-		inst.grassColorW1 = [this.controls.BrickOpts.GColorR.val()*1, this.controls.BrickOpts.GColorG.val()*1, this.controls.BrickOpts.GColorB.val()*1, 1.0, 1, "SideWedge"];
-		inst.grassColorW2 = [this.controls.BrickOpts.GColorR.val()*1, this.controls.BrickOpts.GColorG.val()*1, this.controls.BrickOpts.GColorB.val()*1, 1.0, 2, "SideWedge"];
-		inst.grassColorW3 = [this.controls.BrickOpts.GColorR.val()*1, this.controls.BrickOpts.GColorG.val()*1, this.controls.BrickOpts.GColorB.val()*1, 1.0, 3, "SideWedge"];
+		inst.mainColor = [this.controls.BrickOpts.ColorR.val()*1, this.controls.BrickOpts.ColorG.val()*1, this.controls.BrickOpts.ColorB.val()*1, 1.0, 0, "Basic", 0];
+		inst.mainColorW0 = [this.controls.BrickOpts.ColorR.val()*1, this.controls.BrickOpts.ColorG.val()*1, this.controls.BrickOpts.ColorB.val()*1, 1.0, 0, "SideWedge", 0];
+		inst.mainColorW1 = [this.controls.BrickOpts.ColorR.val()*1, this.controls.BrickOpts.ColorG.val()*1, this.controls.BrickOpts.ColorB.val()*1, 1.0, 1, "SideWedge", 0];
+		inst.mainColorW2 = [this.controls.BrickOpts.ColorR.val()*1, this.controls.BrickOpts.ColorG.val()*1, this.controls.BrickOpts.ColorB.val()*1, 1.0, 2, "SideWedge", 0];
+		inst.mainColorW3 = [this.controls.BrickOpts.ColorR.val()*1, this.controls.BrickOpts.ColorG.val()*1, this.controls.BrickOpts.ColorB.val()*1, 1.0, 3, "SideWedge", 0];
+		inst.grassColor = [this.controls.BrickOpts.GColorR.val()*1, this.controls.BrickOpts.GColorG.val()*1, this.controls.BrickOpts.GColorB.val()*1, 1.0, 0, "Basic", 0];
+		inst.grassColorW0 = [this.controls.BrickOpts.GColorR.val()*1, this.controls.BrickOpts.GColorG.val()*1, this.controls.BrickOpts.GColorB.val()*1, 1.0, 0, "SideWedge", 0];
+		inst.grassColorW1 = [this.controls.BrickOpts.GColorR.val()*1, this.controls.BrickOpts.GColorG.val()*1, this.controls.BrickOpts.GColorB.val()*1, 1.0, 1, "SideWedge", 0];
+		inst.grassColorW2 = [this.controls.BrickOpts.GColorR.val()*1, this.controls.BrickOpts.GColorG.val()*1, this.controls.BrickOpts.GColorB.val()*1, 1.0, 2, "SideWedge", 0];
+		inst.grassColorW3 = [this.controls.BrickOpts.GColorR.val()*1, this.controls.BrickOpts.GColorG.val()*1, this.controls.BrickOpts.GColorB.val()*1, 1.0, 3, "SideWedge", 0];
 		
 		inst.mainColor.octCanMerge = true;
 		inst.grassColor.octCanMerge = true; //TODO: add this to octree.js

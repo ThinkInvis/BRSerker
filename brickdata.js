@@ -282,7 +282,7 @@ class InternalBrick {
 		this.RotationIndex = rot;
 		this.FacingIndex = Orientation;
 		this.Color = clr;
-		this.MaterialIndex = mtl;
+		this.Material = mtl;
 		this.IntRef = InternalName;
 		this.BrsRef = BrickadiaName;
 		this.BlsRef = BlocklandName;

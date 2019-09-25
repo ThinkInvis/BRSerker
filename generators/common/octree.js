@@ -21,7 +21,7 @@ var SBGSI_OctreeVoxels = new SBG_SlowIterator(function(inst) {
 		  ||(leaf.maxY-leaf.minY > inst.octreeSizeLimit[1]/inst.octreeScale[1])
 		  ||(leaf.maxZ-leaf.minZ > inst.octreeSizeLimit[2]/inst.octreeScale[2])
 		   ));
-		if(((c1 != "skip" || c2 != "skip") && (c1[0] != c2[0] || c1[1] != c2[1] || c1[2] != c2[2] || c1[4] != c2[4] || c1[5] != c2[5]))
+		if(((c1 != "skip" || c2 != "skip") && (c1[0] != c2[0] || c1[1] != c2[1] || c1[2] != c2[2] || c1[4] != c2[4] || c1[5] != c2[5] || c1[6] != c2[6]))
 	     || isTooBig) {
 			//color mismatch or brick is too big, split the leaf and restart (todo: can we just resume instead?)
 			//todo: is running size check in a second pass better? seems like current approach splits things up early, but that may be beneficial sometimes
@@ -91,7 +91,7 @@ var SBGSI_OctreeVoxels = new SBG_SlowIterator(function(inst) {
 			brickPos,
 			leaf.refV[4],
 			new THREE.Color(leaf.refV[0], leaf.refV[1], leaf.refV[2], leaf.refV[3]),
-			0,
+			leaf.refV[6],
 			{
 				InternalName: leaf.refV[5]
 			}

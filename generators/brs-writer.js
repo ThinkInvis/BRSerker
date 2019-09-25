@@ -47,7 +47,7 @@ var NewGen = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(function(in
 			name: 'PUBLIC',
 			id: 'FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF'
 		}
-		mtlname = inst.defaultMtl;
+		mtlname = (tb.Material == 0 || tb.Material == undefined) ? inst.defaultMtl : tb.Material;
 	}
 	var color = [tb.Color.r*255,tb.Color.g*255,tb.Color.b*255,255];
 	
@@ -56,16 +56,19 @@ var NewGen = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(function(in
 		nb.asset_name_index = inst.brsdata.brick_assets.length;
 		inst.brsdata.brick_assets.push(assetname);
 	} else nb.asset_name_index = assetind;
+	
 	var mtlind = inst.brsdata.materials.indexOf(mtlname);
 	if(mtlind == -1) {
-		nb.material = inst.brsdata.materials.length;
+		nb.material_index = inst.brsdata.materials.length;
 		inst.brsdata.materials.push(mtlname);
-	} else nb.material = mtlind;
+	} else nb.material_index = mtlind;
+	
 	var ownind = BrsOwnerIndex(inst.brsdata.brick_owners, owner);
 	if(ownind == -1) {
 		nb.owner_index = inst.brsdata.brick_owners.length;
 		inst.brsdata.brick_owners.push(owner);
 	} else nb.owner_index = ownind;
+	
 	var colorind = BrsColorIndex(inst.brsdata.colors, color);
 	if(colorind == -1) {
 		inst.brsdata.colors.push(color);
@@ -138,6 +141,7 @@ var NewGen = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(function(in
 			id: 'ffffffff-ffff-ffff-ffff-ffffffffffff',
 			name: 'PUBLIC'
 		}];
+		console.log(inst.brsdata);
 		var nbd = BRS.write(inst.brsdata);
 		BlobDownload("generated.brs", [nbd], "octet/stream");
 	},
