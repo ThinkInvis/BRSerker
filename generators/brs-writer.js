@@ -69,12 +69,16 @@ var NewGen = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(function(in
 		inst.brsdata.brick_owners.push(owner);
 	} else nb.owner_index = ownind;
 	
-	var colorind = BrsColorIndex(inst.brsdata.colors, color);
-	if(colorind == -1) {
-		inst.brsdata.colors.push(color);
-		nb.color = inst.brsdata.colors.length-1;
+	if(!inst.OverrideColors) {
+		var colorind = BrsColorIndex(inst.brsdata.colors, color);
+		if(colorind == -1) {
+			inst.brsdata.colors.push(color);
+			nb.color = inst.brsdata.colors.length-1;
+		}
+		else nb.color = colorind;
+	} else {
+		nb.color = color;
 	}
-	else nb.color = colorind;
 	
 	
 	//temporarily override owner index to 1 and owners array to empty
@@ -111,7 +115,10 @@ var NewGen = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(function(in
 		return "Preparing BRS... " + inst.currI + "/" + inst.maxI;
 	}
 })], {
-	Controls: {},
+	Controls: {
+		ColorOvrLabel: $("<span>", {"class":"opt-1-2","text":"Override Colors:"}),
+		ColorOvr: $("<span>", {"class":"opt-1-2 cb-container opt-input", "html":"&nbsp;"}).append($("<input>", {"type":"checkbox"}))
+	},
 	OnSetup: function(inst) {
 		inst.bricks = inst.callerParams.BrickList;
 		
@@ -132,6 +139,7 @@ var NewGen = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(function(in
 			colors: []
 		}
 		
+		inst.OverrideColors = this.controls.ColorOvr.find("input").get(0).checked;
 		
 		inst.currI = 0;
 		inst.maxI = inst.bricks.length;
