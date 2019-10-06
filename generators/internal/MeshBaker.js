@@ -388,12 +388,15 @@ var GenInstGeom = {
 }
 var GenInstGeomIndexed = [
 	GenInstGeom.Basic,
+	GenInstGeom.Basic,
 	GenInstGeom.Cone,
 	GenInstGeom.Round,
 	GenInstGeom.Ramp,
 	GenInstGeom.RampCorner,
 	GenInstGeom.Wedge
 ];
+
+GenInstGeom.Tile = GenInstGeom.Basic; //todo: allow overrides elsewhere
 
 //squishing all these bricks together is slow, so use a slowiterator to avoid locking the UI thread
 var SBG_SI_MeshBaker = new SBG_SlowIterator(function(inst) {

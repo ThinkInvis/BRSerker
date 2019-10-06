@@ -40,6 +40,9 @@ var NewGen = new StagedBrickGenerator(GenName, [new SBG_SlowIterator(function(in
 			case "RampCorner":
 				assetname = "PB_DefaultRampCorner";
 				break;
+			case "Tile":
+				assetname = "PB_DefaultTile";
+				break;
 			default:
 				assetname = "PB_DefaultBrick";
 		}
