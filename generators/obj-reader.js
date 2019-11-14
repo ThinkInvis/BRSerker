@@ -242,6 +242,10 @@ var NewGen = new StagedBrickGenerator(GenName, [
 		Reader: $("<input>", {"type":"file", "class":"opt-3-4", "accept":".obj", "height":"20"}),
 		MtlReaderLabel: $("<span class='opt-1-4'>.MTL:</span>"),
 		MtlReader: $("<input>", {"type":"file", "class":"opt-3-4", "accept":".mtl", "height":"20"}),
+		ScaLabel: $("<span class='opt-1-4'>Brick Scale:</span>"),
+		ScaX: $("<input>", {"type": "number", "min": 1, "max": 128, "value": 1, "step": 1, "class": "opt-1-4 opt-input"}),
+		ScaY: $("<input>", {"type": "number", "min": 1, "max": 128, "value": 1, "step": 1, "class": "opt-1-4 opt-input"}),
+		ScaZ: $("<input>", {"type": "number", "min": 1, "max": 128, "value": 1, "step": 1, "class": "opt-1-4 opt-input"}),
 		ResLabel: $("<span class='opt-1-2'>Resolution:</span>"),
 		Res: $("<input>", {"type": "number", "min": 1, "max": 512, "value": 64, "step": 1, "class": "opt-1-2 opt-input"}),
 		SSResLabel: $("<span class='opt-1-2'>Subsampling Res.:</span>"),
@@ -267,6 +271,10 @@ var NewGen = new StagedBrickGenerator(GenName, [
 		inst.mtlOverrides = this.controls.MtlOvr.val().split(" ");
 		inst.baseColor = [this.controls.ColorR.val()*1, this.controls.ColorG.val()*1, this.controls.ColorB.val()*1, 1.0, 0, "Basic", 0];
 		inst.res = this.controls.Res.val()*1;
+		
+		inst.octreeScale = [this.controls.ScaX.val()*1,this.controls.ScaY.val()*1,this.controls.ScaZ.val()*1];
+		inst.octreeSizeLimit = [204, 204, 511];
+		
 		inst.fileName = this.controls.Reader.get(0).files[0];
 		inst.mtlFileName = this.controls.MtlReader.get(0).files[0];
 		
@@ -275,8 +283,6 @@ var NewGen = new StagedBrickGenerator(GenName, [
 		inst.invSS = 1/inst.SSRes;
 		
 		inst.octreeIrregular = true;
-		inst.octreeScale = [1,1,1];
-		inst.octreeSizeLimit = [204, 204, 511];
 	},
 	Description: "Generates a shell of bricks around the geometry defined in an OBJ file."
 });
